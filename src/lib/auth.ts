@@ -144,7 +144,7 @@ export async function getRobloxUser(accessToken: string): Promise<{
   
   return {
     id: userData.sub, // Roblox uses 'sub' for user ID
-    username: userData.preferred_username, // Roblox username
-    displayName: userData.name, // Roblox display name
+    username: userData.preferred_username || `User_${userData.sub}`, // Fallback if no profile scope
+    displayName: userData.name || `User ${userData.sub}`, // Fallback if no profile scope
   };
 } 
