@@ -1,5 +1,5 @@
 export type PropertyStatus = 'Available' | 'Leased' | 'Pending' | 'Maintenance';
-export type PropertyType = 'Residential' | 'Commercial' | 'Industrial' | 'Land' | 'Office' | 'Retail';
+export type PropertyType = 'Small House' | 'Small Row House' | 'Medium House' | 'Medium Row House' | 'Large House' | 'Large Row House';
 
 export interface PropertyImage {
   id: string;

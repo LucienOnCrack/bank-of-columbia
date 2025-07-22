@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-const propertyTypes: PropertyType[] = ['Residential', 'Commercial', 'Industrial', 'Land', 'Office', 'Retail'];
+const propertyTypes: PropertyType[] = ['Small House', 'Small Row House', 'Medium House', 'Medium Row House', 'Large House', 'Large Row House'];
 const municipalities: string[] = ['Lander', 'Medford', 'Woodbury', 'Mersea'];
 
 export default function PropertiesPage() {

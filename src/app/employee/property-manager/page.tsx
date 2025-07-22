@@ -45,7 +45,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const propertyTypes: PropertyType[] = ['Residential', 'Commercial', 'Industrial', 'Land', 'Office', 'Retail'];
+const propertyTypes: PropertyType[] = ['Small House', 'Small Row House', 'Medium House', 'Medium Row House', 'Large House', 'Large Row House'];
 const propertyStatuses: PropertyStatus[] = ['Available', 'Leased', 'Pending', 'Maintenance'];
 const municipalities: string[] = ['Lander', 'Medford', 'Woodbury', 'Mersea'];
 
@@ -70,7 +70,7 @@ export default function PropertyManager() {
   // Form data
   const [formData, setFormData] = useState<PropertyFormData>({
     municipality: '',
-    type: 'Residential',
+    type: 'Small House',
     holderRobloxName: '',
     holderRobloxId: '',
     neighbourhood: '',
@@ -109,7 +109,7 @@ export default function PropertyManager() {
   const resetForm = () => {
     setFormData({
       municipality: '',
-      type: 'Residential',
+      type: 'Small House',
       holderRobloxName: '',
       holderRobloxId: '',
       neighbourhood: '',
