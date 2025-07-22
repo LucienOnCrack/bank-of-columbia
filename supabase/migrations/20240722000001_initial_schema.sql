@@ -4,9 +4,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create custom user role type
 CREATE TYPE user_role AS ENUM ('user', 'employee', 'admin');
 
--- Create users table (extends Supabase auth.users)
+-- Create users table (standalone, no auth.users dependency)
 CREATE TABLE public.users (
-    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     roblox_id TEXT UNIQUE NOT NULL,
     roblox_name TEXT NOT NULL,
     role user_role DEFAULT 'user' NOT NULL,
@@ -62,75 +62,14 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 
--- Users can read their own profile
-CREATE POLICY "Users can read own profile" ON public.users
-    FOR SELECT USING (auth.uid() = id);
+-- Note: Since we're not using Supabase Auth, we'll need to implement
+-- our own authentication context. For now, we'll disable RLS and 
+-- handle permissions in our API routes
 
--- Users can update their own profile (but not role or balance)
-CREATE POLICY "Users can update own profile" ON public.users
-    FOR UPDATE USING (auth.uid() = id);
-
--- Employees and admins can read all users
-CREATE POLICY "Employees can read all users" ON public.users
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM public.users 
-            WHERE id = auth.uid() 
-            AND role IN ('employee', 'admin')
-        )
-    );
-
--- Only admins can update user roles and balances
-CREATE POLICY "Admins can update users" ON public.users
-    FOR UPDATE USING (
-        EXISTS (
-            SELECT 1 FROM public.users 
-            WHERE id = auth.uid() 
-            AND role = 'admin'
-        )
-    );
-
--- Users can read their own properties
-CREATE POLICY "Users can read own properties" ON public.properties
-    FOR SELECT USING (
-        owner_id = auth.uid() OR
-        EXISTS (
-            SELECT 1 FROM public.users 
-            WHERE id = auth.uid() 
-            AND role IN ('employee', 'admin')
-        )
-    );
-
--- Only employees and admins can insert/update properties
-CREATE POLICY "Employees can manage properties" ON public.properties
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.users 
-            WHERE id = auth.uid() 
-            AND role IN ('employee', 'admin')
-        )
-    );
-
--- Users can read their own transactions
-CREATE POLICY "Users can read own transactions" ON public.transactions
-    FOR SELECT USING (
-        user_id = auth.uid() OR
-        EXISTS (
-            SELECT 1 FROM public.users 
-            WHERE id = auth.uid() 
-            AND role IN ('employee', 'admin')
-        )
-    );
-
--- Only employees and admins can create transactions
-CREATE POLICY "Employees can create transactions" ON public.transactions
-    FOR INSERT WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM public.users 
-            WHERE id = auth.uid() 
-            AND role IN ('employee', 'admin')
-        )
-    );
+-- Temporarily allow all operations (we'll handle auth in our API)
+CREATE POLICY "Allow all for now" ON public.users FOR ALL USING (true);
+CREATE POLICY "Allow all for now" ON public.properties FOR ALL USING (true);
+CREATE POLICY "Allow all for now" ON public.transactions FOR ALL USING (true);
 
 -- Create indexes for performance
 CREATE INDEX idx_users_roblox_id ON public.users(roblox_id);

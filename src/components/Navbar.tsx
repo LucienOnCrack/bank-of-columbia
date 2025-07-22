@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/components/AuthProvider';
+import { useAuth } from './AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -17,7 +17,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import { getAllowedRoutes } from '@/lib/auth';
+import { canAccess } from '@/lib/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -31,19 +31,17 @@ import {
 } from 'lucide-react';
 
 export function Navbar() {
-  const { user, appUser, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
+    signOut();
     router.push('/');
   };
 
-  if (!user || !appUser) {
+  if (!user) {
     return null;
   }
-
-  const allowedRoutes = getAllowedRoutes(appUser.role);
 
   const navigationItems = [
     {
@@ -69,7 +67,7 @@ export function Navbar() {
   ];
 
   const filteredNavItems = navigationItems.filter(item => 
-    !item.requiredRole || allowedRoutes.includes(item.href)
+    !item.requiredRole || canAccess(user.role, item.requiredRole)
   );
 
   const getRoleBadgeColor = (role: string) => {
@@ -120,13 +118,13 @@ export function Navbar() {
             <div className="flex items-center space-x-2 text-sm">
               <DollarSign className="h-4 w-4" />
               <span className="font-medium">
-                ${appUser.balance.toLocaleString()}
+                ${user.balance.toLocaleString()}
               </span>
             </div>
 
             {/* Role Badge */}
-            <Badge className={getRoleBadgeColor(appUser.role)}>
-              {appUser.role.toUpperCase()}
+            <Badge className={getRoleBadgeColor(user.role)}>
+              {user.role.toUpperCase()}
             </Badge>
 
             {/* User Dropdown */}
@@ -140,10 +138,10 @@ export function Navbar() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {appUser.roblox_name}
+                      {user.roblox_name}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      Roblox ID: {appUser.roblox_id}
+                      Roblox ID: {user.roblox_id}
                     </p>
                   </div>
                 </DropdownMenuLabel>

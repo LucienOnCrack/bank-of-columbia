@@ -3,7 +3,7 @@
 import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getRobloxOAuthUrl } from '@/lib/auth';
+import { getRobloxAuthUrl } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { DollarSign, Shield, Users, Building } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function HomePage() {
   }, [user, loading, router]);
 
   const handleRobloxLogin = () => {
-    const oauthUrl = getRobloxOAuthUrl();
+    const oauthUrl = getRobloxAuthUrl();
     window.location.href = oauthUrl;
   };
 

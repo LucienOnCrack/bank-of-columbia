@@ -1,53 +1,54 @@
 'use client';
 
-import { useAuth } from '@/components/AuthProvider';
-import { canAccess } from '@/lib/auth';
-import { UserRole } from '@/types/user';
-import { useRouter } from 'next/navigation';
+import { useAuth } from './AuthProvider';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { canAccess } from '@/lib/auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: UserRole;
-  redirectTo?: string;
+  requiredRole?: 'user' | 'employee' | 'admin';
+  fallbackPath?: string;
 }
 
 export function ProtectedRoute({ 
   children, 
   requiredRole = 'user',
-  redirectTo = '/auth/login'
+  fallbackPath = '/' 
 }: ProtectedRouteProps) {
-  const { user, appUser, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
-      // If not authenticated, redirect to login
-      if (!user || !appUser) {
-        router.push(redirectTo);
+      if (!user) {
+        // User not logged in, redirect to home
+        router.push(fallbackPath);
         return;
       }
 
-      // If authenticated but doesn't have required role, redirect to dashboard
-      if (!canAccess(appUser.role, requiredRole)) {
+      if (!canAccess(user.role, requiredRole)) {
+        // User doesn't have required role, redirect to dashboard
         router.push('/dashboard');
         return;
       }
     }
-  }, [user, appUser, loading, requiredRole, redirectTo, router]);
+  }, [user, loading, requiredRole, fallbackPath, router]);
 
-  // Show loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  // If not authenticated or insufficient permissions, don't render children
-  if (!user || !appUser || !canAccess(appUser.role, requiredRole)) {
-    return null;
+  if (!user) {
+    return null; // Will redirect in useEffect
+  }
+
+  if (!canAccess(user.role, requiredRole)) {
+    return null; // Will redirect in useEffect
   }
 
   return <>{children}</>;
@@ -56,7 +57,7 @@ export function ProtectedRoute({
 // Higher-order component for protecting pages
 export function withAuth<P extends object>(
   Component: React.ComponentType<P>,
-  requiredRole?: UserRole
+  requiredRole?: 'user' | 'employee' | 'admin'
 ) {
   return function AuthenticatedComponent(props: P) {
     return (
