@@ -11,6 +11,7 @@ export interface User {
   id: string;
   roblox_id: string;
   roblox_name: string;
+  profile_picture?: string; // Roblox avatar URL
   role: UserRole;
   balance: number;
   created_at: string;

@@ -1,9 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@/types/user';
-import { supabase } from '@/lib/supabase';
 import Cookies from 'js-cookie';
+import { User } from '@/types/user';
 import { verifySessionToken } from '@/lib/auth';
 
 interface AuthContextType {
@@ -31,19 +30,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const sessionData = verifySessionToken(token);
           
           if (sessionData) {
-            // Fetch full user data from database
-            const { data: userData, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', sessionData.userId)
-              .single();
+            // Use session data directly instead of fetching from DB
+            // since RLS blocks anon access and we have all needed data in JWT
+            const user: User = {
+              id: sessionData.userId,
+              roblox_id: sessionData.robloxId,
+              roblox_name: sessionData.username,
+              profile_picture: sessionData.profilePicture,
+              role: sessionData.role as 'user' | 'employee' | 'admin',
+              balance: 0, // Will be fetched when needed in protected routes
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
             
-            if (userData && !error) {
-              setUser(userData);
-            } else {
-              // Invalid session, remove token
-              Cookies.remove('session-token');
-            }
+            setUser(user);
           } else {
             // Invalid token, remove it
             Cookies.remove('session-token');

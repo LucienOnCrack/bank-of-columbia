@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
         id: crypto.randomUUID(), // Always generate UUID explicitly
         roblox_id: robloxUser.id,
         roblox_name: robloxUser.username,
+        profile_picture: robloxUser.picture || null,
         role: 'user' as const,
         balance: 0,
       };

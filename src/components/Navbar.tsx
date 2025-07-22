@@ -1,137 +1,88 @@
 'use client';
 
 import { useAuth } from './AuthProvider';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
-import { canAccess } from '@/lib/auth';
+} from './ui/dropdown-menu';
+import { DollarSign, LogOut, User, Shield, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { 
-  User, 
-  LogOut, 
-  Settings, 
-  Home, 
-  Building, 
-  Users,
-  DollarSign 
-} from 'lucide-react';
+import Image from 'next/image';
 
 export function Navbar() {
-  const { user, signOut } = useAuth();
-  const router = useRouter();
+  const { user, loading, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    signOut();
-    router.push('/');
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-red-500';
+      case 'employee': return 'bg-blue-500';
+      default: return 'bg-green-500';
+    }
   };
 
-  if (!user) {
-    return null;
-  }
-
-  const navigationItems = [
-    {
-      title: 'Dashboard',
-      href: '/dashboard',
-      icon: Home,
-      description: 'View your account and properties',
-    },
-    {
-      title: 'Employee Panel',
-      href: '/employee',
-      icon: Building,
-      description: 'Manage properties and assignments',
-      requiredRole: 'employee',
-    },
-    {
-      title: 'Admin Panel',
-      href: '/admin',
-      icon: Users,
-      description: 'User management and system controls',
-      requiredRole: 'admin',
-    },
-  ];
-
-  const filteredNavItems = navigationItems.filter(item => 
-    !item.requiredRole || canAccess(user.role, item.requiredRole)
-  );
-
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'bg-red-500 hover:bg-red-600';
-      case 'employee':
-        return 'bg-blue-500 hover:bg-blue-600';
-      default:
-        return 'bg-green-500 hover:bg-green-600';
+      case 'admin': return <Shield className="h-3 w-3" />;
+      case 'employee': return <Settings className="h-3 w-3" />;
+      default: return <User className="h-3 w-3" />;
     }
   };
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo and Brand */}
+    <nav className="border-b">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center space-x-2">
+          <DollarSign className="h-6 w-6" />
+          <span className="font-bold text-lg">Bank of Columbia</span>
+        </Link>
+        
+        {!loading && user && (
           <div className="flex items-center space-x-4">
-            <Link href="/dashboard" className="flex items-center space-x-2">
-              <DollarSign className="h-6 w-6" />
-              <span className="font-bold text-xl">Bank of Columbia</span>
-            </Link>
-          </div>
+            <nav className="flex items-center space-x-6">
+              <Link 
+                href="/dashboard" 
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Dashboard
+              </Link>
+              {(user.role === 'employee' || user.role === 'admin') && (
+                <Link 
+                  href="/employee" 
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                >
+                  Employee Panel
+                </Link>
+              )}
+              {user.role === 'admin' && (
+                <Link 
+                  href="/admin" 
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                >
+                  Admin Panel
+                </Link>
+              )}
+            </nav>
 
-          {/* Navigation Menu */}
-          <NavigationMenu>
-            <NavigationMenuList>
-              {filteredNavItems.map((item) => (
-                <NavigationMenuItem key={item.href}>
-                  <NavigationMenuTrigger asChild>
-                    <Link
-                      href={item.href}
-                      className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </NavigationMenuTrigger>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
-
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Balance Display */}
-            <div className="flex items-center space-x-2 text-sm">
-              <DollarSign className="h-4 w-4" />
-              <span className="font-medium">
-                ${user.balance.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Role Badge */}
-            <Badge className={getRoleBadgeColor(user.role)}>
-              {user.role.toUpperCase()}
-            </Badge>
-
-            {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <User className="h-4 w-4" />
+                  {user.profile_picture ? (
+                    <Image
+                      src={user.profile_picture}
+                      alt={`${user.roblox_name}'s avatar`}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -140,33 +91,31 @@ export function Navbar() {
                     <p className="text-sm font-medium leading-none">
                       {user.roblox_name}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      Roblox ID: {user.roblox_id}
-                    </p>
+                    <div className="flex items-center space-x-2">
+                      <Badge 
+                        variant="secondary" 
+                        className={`${getRoleColor(user.role)} text-white text-xs`}
+                      >
+                        <span className="flex items-center space-x-1">
+                          {getRoleIcon(user.role)}
+                          <span className="capitalize">{user.role}</span>
+                        </span>
+                      </Badge>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        ${user.balance.toFixed(2)}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="flex items-center">
-                    <Home className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={signOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );

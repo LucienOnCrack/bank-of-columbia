@@ -11,7 +11,7 @@ export const ROBLOX_OAUTH_CONFIG = {
   authorizeUrl: 'https://apis.roblox.com/oauth/v1/authorize',
   tokenUrl: 'https://apis.roblox.com/oauth/v1/token',
   userInfoUrl: 'https://apis.roblox.com/oauth/v1/userinfo',
-  scope: 'openid',
+  scope: 'openid profile',
   redirectUri: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/callback`,
 };
 
@@ -62,6 +62,7 @@ export async function getRobloxUser(accessToken: string): Promise<{
   id: string;
   username: string;
   displayName: string;
+  picture?: string;
 }> {
   const response = await fetch(ROBLOX_OAUTH_CONFIG.userInfoUrl, {
     headers: {
@@ -76,11 +77,29 @@ export async function getRobloxUser(accessToken: string): Promise<{
   }
 
   const userData = await response.json();
+  console.log('Raw Roblox user data:', userData);
+
+  // NO FALLBACKS - if we don't have real data, FAIL
+  if (!userData.preferred_username) {
+    console.error('No username in Roblox response:', userData);
+    throw new Error('Roblox API did not return a valid username');
+  }
+
+  if (!userData.name) {
+    console.error('No display name in Roblox response:', userData);
+    throw new Error('Roblox API did not return a valid display name');
+  }
+
+  if (!userData.sub) {
+    console.error('No user ID in Roblox response:', userData);
+    throw new Error('Roblox API did not return a valid user ID');
+  }
 
   return {
     id: userData.sub,
-    username: userData.preferred_username || `User_${userData.sub}`,
-    displayName: userData.name || `User ${userData.sub}`,
+    username: userData.preferred_username,
+    displayName: userData.name,
+    picture: userData.picture, // Optional profile picture
   };
 }
 
@@ -91,6 +110,7 @@ export function createSessionToken(user: User): string {
       userId: user.id,
       robloxId: user.roblox_id,
       username: user.roblox_name,
+      profilePicture: user.profile_picture,
       role: user.role,
     },
     JWT_SECRET,
@@ -103,6 +123,7 @@ export function verifySessionToken(token: string): {
   userId: string;
   robloxId: string;
   username: string;
+  profilePicture?: string;
   role: string;
 } | null {
   try {
@@ -110,12 +131,14 @@ export function verifySessionToken(token: string): {
       userId: string;
       robloxId: string;
       username: string;
+      profilePicture?: string;
       role: string;
     };
     return {
       userId: decoded.userId,
       robloxId: decoded.robloxId,
       username: decoded.username,
+      profilePicture: decoded.profilePicture,
       role: decoded.role,
     };
   } catch (error) {
@@ -131,6 +154,7 @@ export function getCurrentUserFromRequest(request: NextRequest): {
   userId: string;
   robloxId: string;
   username: string;
+  profilePicture?: string;
   role: string;
 } | null {
   const token = request.cookies.get('session-token')?.value;
