@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { User } from '@/types/user';
 
@@ -120,22 +119,7 @@ export function verifySessionToken(token: string): {
   }
 }
 
-// Get current user from session (server-side)
-export async function getCurrentUser(): Promise<{
-  userId: string;
-  robloxId: string;
-  username: string;
-  role: string;
-} | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('session-token')?.value;
-  
-  if (!token) {
-    return null;
-  }
-  
-  return verifySessionToken(token);
-}
+// Note: getCurrentUser moved to auth-server.ts for server-side use
 
 // Get current user from request (middleware/API routes)
 export function getCurrentUserFromRequest(request: NextRequest): {
