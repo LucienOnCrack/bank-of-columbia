@@ -35,7 +35,6 @@ export function Navbar() {
     if (!isMounted) return null;
     if (pathname === '/dashboard') return 'Dashboard';
     if (pathname === '/admin') return 'Admin Panel';
-    if (pathname === '/properties') return 'Available Properties';
     return null;
   };
 
