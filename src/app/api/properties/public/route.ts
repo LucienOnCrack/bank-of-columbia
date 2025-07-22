@@ -34,12 +34,40 @@ interface DatabaseProperty {
   created_by: string;
 }
 
+// Function to convert database property types back to frontend format
+function mapPropertyTypeFromDatabase(dbType: string): string {
+  const typeMapping: { [key: string]: string } = {
+    'Residential': 'Medium House',
+    'Commercial': 'Large House',
+    'Industrial': 'Large House',
+    'Land': 'Small House',
+    'Office': 'Medium House',
+    'Retail': 'Medium Row House'
+  };
+  
+  return typeMapping[dbType] || dbType;
+}
+
+// Function to convert frontend property types to database format for filtering
+function mapPropertyTypeToDatabase(newType: string): string {
+  const typeMapping: { [key: string]: string } = {
+    'Small House': 'Residential',
+    'Small Row House': 'Residential', 
+    'Medium House': 'Residential',
+    'Medium Row House': 'Residential',
+    'Large House': 'Commercial',
+    'Large Row House': 'Commercial'
+  };
+  
+  return typeMapping[newType] || newType;
+}
+
 // Helper function to transform database fields to frontend format
 function transformPropertyForFrontend(dbProperty: DatabaseProperty) {
   return {
     id: dbProperty.id,
     municipality: dbProperty.municipality,
-    type: dbProperty.type,
+    type: mapPropertyTypeFromDatabase(dbProperty.type), // Convert from DB to frontend format
     holderRobloxName: dbProperty.holder_roblox_name,
     holderRobloxId: dbProperty.holder_roblox_id,
     neighbourhood: dbProperty.neighbourhood,
@@ -76,7 +104,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (type) {
-      query = query.eq('type', type);
+      query = query.eq('type', mapPropertyTypeToDatabase(type)); // Convert frontend type to DB type for filtering
     }
     
     if (maxPrice) {

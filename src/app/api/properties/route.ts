@@ -16,6 +16,34 @@ const supabaseAdmin = createClient(
   }
 );
 
+// Temporary mapping function to convert new property types to old database values
+function mapPropertyTypeToDatabase(newType: string): string {
+  const typeMapping: { [key: string]: string } = {
+    'Small House': 'Residential',
+    'Small Row House': 'Residential', 
+    'Medium House': 'Residential',
+    'Medium Row House': 'Residential',
+    'Large House': 'Commercial',
+    'Large Row House': 'Commercial'
+  };
+  
+  return typeMapping[newType] || newType;
+}
+
+// Function to convert database property types back to frontend format
+function mapPropertyTypeFromDatabase(dbType: string): string {
+  const typeMapping: { [key: string]: string } = {
+    'Residential': 'Medium House',
+    'Commercial': 'Large House',
+    'Industrial': 'Large House',
+    'Land': 'Small House',
+    'Office': 'Medium House',
+    'Retail': 'Medium Row House'
+  };
+  
+  return typeMapping[dbType] || dbType;
+}
+
 // Helper function to upload images to Supabase Storage
 async function uploadImages(files: File[], propertyId: string) {
   const uploadedImages = [];
@@ -85,7 +113,7 @@ function transformPropertyForFrontend(dbProperty: DatabaseProperty) {
   return {
     id: dbProperty.id,
     municipality: dbProperty.municipality,
-    type: dbProperty.type,
+    type: mapPropertyTypeFromDatabase(dbProperty.type), // Convert from DB to frontend format
     holderRobloxName: dbProperty.holder_roblox_name,
     holderRobloxId: dbProperty.holder_roblox_id,
     neighbourhood: dbProperty.neighbourhood,
@@ -175,7 +203,7 @@ export async function POST(request: NextRequest) {
     // Extract property data
     const propertyData = {
       municipality: formData.get('municipality') as string,
-      type: formData.get('type') as string,
+      type: mapPropertyTypeToDatabase(formData.get('type') as string), // Convert to DB format
       holder_roblox_name: formData.get('holderRobloxName') as string,
       holder_roblox_id: formData.get('holderRobloxId') as string,
       neighbourhood: formData.get('neighbourhood') as string,
@@ -338,7 +366,7 @@ export async function PUT(request: NextRequest) {
     // Extract updated property data
     const propertyData = {
       municipality: formData.get('municipality') as string,
-      type: formData.get('type') as string,
+      type: mapPropertyTypeToDatabase(formData.get('type') as string), // Convert to DB format
       holder_roblox_name: formData.get('holderRobloxName') as string,
       holder_roblox_id: formData.get('holderRobloxId') as string,
       neighbourhood: formData.get('neighbourhood') as string,
