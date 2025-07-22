@@ -5,7 +5,10 @@ export type TransactionType =
   | 'withdrawal' 
   | 'property_purchase' 
   | 'property_sale' 
-  | 'property_assignment';
+  | 'property_assignment'
+  | 'mortgage_payment'
+  | 'rent_payment'
+  | 'fee_payment';
 
 export interface User {
   id: string;
@@ -36,9 +39,13 @@ export interface Transaction {
   id: string;
   user_id: string;
   property_id?: string;
+  mortgage_id?: string;
   type: TransactionType;
   amount: number;
   description?: string;
+  payment_method?: string;
+  payment_date?: string;
+  notes?: string;
   created_by: string;
   created_at: string;
   // Relations

@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
 
     // Create JWT session token
     const sessionToken = createSessionToken(user);
+    console.log('Setting session token for user:', user.roblox_name);
 
     // Create response and set cookie
     const response = NextResponse.redirect(new URL('/dashboard', request.url));
@@ -96,6 +97,7 @@ export async function GET(request: NextRequest) {
       path: '/',
     });
 
+    console.log('Redirecting to dashboard with session token set');
     return response;
 
   } catch (error) {

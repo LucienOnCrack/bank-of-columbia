@@ -13,7 +13,9 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('HomePage: loading =', loading, 'user =', !!user, user?.roblox_name);
     if (!loading && user) {
+      console.log('HomePage: Redirecting to dashboard for user:', user.roblox_name);
       router.push('/dashboard');
     }
   }, [user, loading, router]);

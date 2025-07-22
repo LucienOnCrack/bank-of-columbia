@@ -1,88 +1,120 @@
 'use client';
 
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/components/AuthProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-// Table components removed as they're not used in this component
-import { propertyOperations, transactionOperations } from '@/lib/supabase';
-import { Property, Transaction } from '@/types/user';
-import { useEffect, useState } from 'react';
 import { 
   DollarSign, 
   Building, 
   TrendingUp, 
-  Clock,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
   Home,
-  MapPin,
-  Calendar
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-export default function DashboardPage() {
-  return (
-    <ProtectedRoute>
-      <DashboardContent />
-    </ProtectedRoute>
-  );
+interface Property {
+  id: string;
+  municipality: string;
+  type: string;
+  holderRobloxName: string;
+  neighbourhood: string;
+  code: string;
+  leasePrice: number;
+  status: string;
+  created_at: string;
 }
 
-function DashboardContent() {
-  const { appUser } = useAuth();
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  description: string | null;
+  created_at: string;
+  user_id: string;
+}
+
+interface Mortgage {
+  id: string;
+  propertyId: string;
+  userId: string;
+  amountTotal: number;
+  amountPaid: number;
+  nextPaymentDue: string;
+  paymentFrequency: 'daily' | 'weekly';
+  status: 'active' | 'completed' | 'defaulted';
+  property?: {
+    id: string;
+    code: string;
+    municipality: string;
+  };
+}
+
+export default function DashboardPage() {
+  const { user, loading } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [mortgages, setMortgages] = useState<Mortgage[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!appUser) return;
-      
-      try {
-        const [userProperties, userTransactions] = await Promise.all([
-          propertyOperations.getUserProperties(appUser.id),
-          transactionOperations.getUserTransactions(appUser.id)
-        ]);
-        
-        setProperties(userProperties || []);
-        setTransactions(userTransactions?.slice(0, 10) || []); // Show only recent 10 transactions
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [appUser]);
-
-  if (!appUser) {
-    return null;
-  }
-
-  const totalPropertyValue = properties.reduce((sum, property) => sum + property.value, 0);
-  const netWorth = appUser.balance + totalPropertyValue;
-
-  const getTransactionTypeColor = (type: string) => {
-    switch (type) {
-      case 'deposit':
-        return 'bg-green-500';
-      case 'withdrawal':
-        return 'bg-red-500';
-      case 'property_purchase':
-        return 'bg-blue-500';
-      case 'property_sale':
-        return 'bg-purple-500';
-      case 'property_assignment':
-        return 'bg-orange-500';
-      default:
-        return 'bg-gray-500';
+    if (user) {
+      fetchDashboardData();
     }
-  };
+  }, [user]);
 
-  const formatTransactionType = (type: string) => {
-    return type.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch real properties data
+      try {
+        const propertiesResponse = await fetch('/api/properties');
+        if (propertiesResponse.ok) {
+          const propertiesData = await propertiesResponse.json();
+          setProperties(propertiesData.properties || []);
+        }
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      }
+
+      // Fetch real transactions data  
+      try {
+        const transactionsResponse = await fetch('/api/admin/transactions');
+        if (transactionsResponse.ok) {
+          const transactionsData = await transactionsResponse.json();
+          // Filter to only show user's transactions
+          const userTransactions = transactionsData.transactions?.filter(
+            (t: any) => t.user_id === user?.id
+          ) || [];
+          setTransactions(userTransactions); // Show all user transactions
+        }
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+      }
+
+      // Fetch real mortgages data
+      try {
+        const mortgagesResponse = await fetch('/api/mortgages');
+        if (mortgagesResponse.ok) {
+          const mortgagesData = await mortgagesResponse.json();
+          // Filter to only show user's mortgages
+          const userMortgages = mortgagesData.mortgages?.filter(
+            (m: any) => m.userId === user?.id && m.status === 'active'
+          ) || [];
+          setMortgages(userMortgages);
+        }
+      } catch (error) {
+        console.error('Error fetching mortgages:', error);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setDataLoading(false);
+    }
   };
 
   if (loading) {
@@ -93,112 +125,167 @@ function DashboardContent() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p>Please log in to view your dashboard.</p>
+      </div>
+    );
+  }
+
+  const totalPropertyValue = properties.reduce((sum, property) => sum + (property.leasePrice * 12), 0); // Annual lease value
+  
+  // Get next payment due
+  const activeMortgages = mortgages.filter(m => m.status === 'active');
+  const nextPaymentDue = activeMortgages.length > 0 
+    ? Math.min(...activeMortgages.map(m => new Date(m.nextPaymentDue).getTime()))
+    : null;
+  
+  const overdueMortgages = activeMortgages.filter(m => 
+    new Date(m.nextPaymentDue) < new Date()
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">
-          Welcome back, {appUser.roblox_name}!
-        </h1>
-        <p className="text-muted-foreground">
-          Here&apos;s an overview of your Bank of Columbia account
+        <h1 className="text-3xl font-bold">Welcome back, {user.roblox_name}!</h1>
+        <p className="text-muted-foreground mt-2">
+          Here&apos;s an overview of your financial portfolio
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Account Balance</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${appUser.balance.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Available funds</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Property Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Property Value</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalPropertyValue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">{properties.length} properties owned</p>
+            <p className="text-xs text-muted-foreground">
+              {properties.length} properties owned
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Worth</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Active Mortgages</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${netWorth.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Total assets</p>
+            <div className="text-2xl font-bold">{activeMortgages.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Loans in progress
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Next Payment Due</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{transactions.length}</div>
-            <p className="text-xs text-muted-foreground">Transactions this month</p>
+            <div className="text-2xl font-bold">
+              {nextPaymentDue ? new Date(nextPaymentDue).toLocaleDateString() : 'None'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {nextPaymentDue ? 'Upcoming payment' : 'No payments due'}
+            </p>
           </CardContent>
         </Card>
+
+
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Properties Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Mortgage Payments Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Home className="h-5 w-5" />
-              My Properties
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5" />
+              <span>Upcoming Payments</span>
             </CardTitle>
             <CardDescription>
-              Properties you currently own
+              Your next mortgage payment due dates
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {properties.length === 0 ? (
-              <div className="text-center py-8">
-                <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No properties owned yet</p>
-                <p className="text-sm text-muted-foreground">
-                  Contact an employee to get your first property assigned
-                </p>
-              </div>
-            ) : (
+            {dataLoading ? (
+              <p className="text-muted-foreground">Loading payments...</p>
+            ) : activeMortgages.length > 0 ? (
               <div className="space-y-4">
-                {properties.slice(0, 5).map((property) => (
-                  <div key={property.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                {activeMortgages.slice(0, 5).map((mortgage) => {
+                  const dueDate = new Date(mortgage.nextPaymentDue);
+                  const isOverdue = dueDate < new Date();
+                  const daysUntil = Math.ceil((dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  
+                  return (
+                    <div key={mortgage.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
-                        <p className="font-medium">{property.address}</p>
-                        {property.description && (
-                          <p className="text-sm text-muted-foreground">{property.description}</p>
-                        )}
+                        <p className="font-medium">{mortgage.property?.code || 'Property'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {mortgage.paymentFrequency} payment
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+                          {dueDate.toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {isOverdue ? `${Math.abs(daysUntil)} days overdue` : 
+                           daysUntil === 0 ? 'Due today' : 
+                           daysUntil === 1 ? 'Due tomorrow' : 
+                           `${daysUntil} days`}
+                        </p>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">No active mortgages</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Properties Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Home className="h-5 w-5" />
+              <span>Your Properties</span>
+            </CardTitle>
+            <CardDescription>
+              Real estate assets in your portfolio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {dataLoading ? (
+              <p className="text-muted-foreground">Loading properties...</p>
+            ) : properties.length > 0 ? (
+              <div className="space-y-4">
+                {properties.map((property) => (
+                  <div key={property.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{property.code}</p>
+                      <p className="text-sm text-muted-foreground">{property.municipality}, {property.neighbourhood}</p>
+                    </div>
                     <div className="text-right">
-                      <p className="font-medium">${property.value.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Assigned by {property.assigned_by_user?.roblox_name}
-                      </p>
+                      <p className="font-bold">${property.leasePrice?.toLocaleString() || '0'}/mo</p>
+                      <p className="text-xs text-muted-foreground">{property.status}</p>
                     </div>
                   </div>
                 ))}
-                {properties.length > 5 && (
-                  <Button variant="outline" className="w-full">
-                    View All Properties ({properties.length})
-                  </Button>
-                )}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">No properties owned yet</p>
               </div>
             )}
           </CardContent>
@@ -207,61 +294,53 @@ function DashboardContent() {
         {/* Recent Transactions */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Recent Transactions
+            <CardTitle className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5" />
+              <span>Recent Transactions</span>
             </CardTitle>
             <CardDescription>
-              Your latest account activity
+              Your latest financial activity
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {transactions.length === 0 ? (
-              <div className="text-center py-8">
-                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No transactions yet</p>
-                <p className="text-sm text-muted-foreground">
-                  Your transaction history will appear here
-                </p>
-              </div>
-            ) : (
+            {dataLoading ? (
+              <p className="text-muted-foreground">Loading transactions...</p>
+            ) : transactions.length > 0 ? (
               <div className="space-y-4">
-                {transactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Badge className={getTransactionTypeColor(transaction.type)}>
-                        {formatTransactionType(transaction.type)}
-                      </Badge>
-                      <div>
-                        <p className="font-medium">
-                          {transaction.property?.address || transaction.description || 'Account Transaction'}
+                {transactions.map((transaction) => {
+                  const isIncoming = ['deposit', 'mortgage_payment', 'rent_payment'].includes(transaction.type);
+                  return (
+                    <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        {isIncoming ? (
+                          <ArrowUpRight className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        ) : (
+                          <ArrowDownRight className="h-4 w-4 text-red-500 flex-shrink-0" />
+                        )}
+                        <div>
+                          <p className="font-medium capitalize">
+                            {transaction.type.replace(/_/g, ' ')}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {transaction.description || 'Transaction'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${isIncoming ? 'text-green-600' : 'text-red-600'}`}>
+                          {isIncoming ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
                         </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
+                        <p className="text-xs text-muted-foreground">
                           {new Date(transaction.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`font-medium ${
-                        transaction.type === 'deposit' || transaction.type === 'property_sale' 
-                          ? 'text-green-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'deposit' || transaction.type === 'property_sale' ? '+' : '-'}
-                        ${Math.abs(transaction.amount).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        By {transaction.created_by_user?.roblox_name}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {transactions.length >= 10 && (
-                  <Button variant="outline" className="w-full">
-                    View All Transactions
-                  </Button>
-                )}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">No transactions yet</p>
               </div>
             )}
           </CardContent>

@@ -1,18 +1,18 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
 import { User } from '@/types/user';
-import { verifySessionToken } from '@/lib/auth';
 
 interface AuthContextType {
   user: User | null;
+  appUser: User | null; // For admin/employee pages
   loading: boolean;
   signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  appUser: null,
   loading: true,
   signOut: () => {},
 });
@@ -24,34 +24,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const token = Cookies.get('session-token');
+        console.log('AuthProvider: Checking authentication...');
         
-        if (token) {
-          const sessionData = verifySessionToken(token);
-          
-          if (sessionData) {
-            // Use session data directly instead of fetching from DB
-            // since RLS blocks anon access and we have all needed data in JWT
-            const user: User = {
-              id: sessionData.userId,
-              roblox_id: sessionData.robloxId,
-              roblox_name: sessionData.username,
-              profile_picture: sessionData.profilePicture,
-              role: sessionData.role as 'user' | 'employee' | 'admin',
-              balance: 0, // Will be fetched when needed in protected routes
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            };
-            
-            setUser(user);
-          } else {
-            // Invalid token, remove it
-            Cookies.remove('session-token');
-          }
+        // Call API endpoint that can read httpOnly cookie
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include', // Include cookies in request
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('AuthProvider: Got user data from API:', data.user);
+          console.log('AuthProvider: User role:', data.user.role);
+          setUser(data.user);
+        } else {
+          console.log('AuthProvider: Not authenticated, response status:', response.status);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        Cookies.remove('session-token');
       } finally {
         setLoading(false);
       }
@@ -60,14 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, []);
 
-  const signOut = () => {
-    Cookies.remove('session-token');
+  const signOut = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
     setUser(null);
     window.location.href = '/';
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, appUser: user, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
