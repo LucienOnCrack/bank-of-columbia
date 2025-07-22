@@ -250,13 +250,13 @@ export default function PropertiesPage() {
             {filteredProperties.map((property) => (
               <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
                 {/* Property Image */}
-                <div className="relative h-48">
+                <div className="relative h-56">
                   {getPropertyImage(property) ? (
                     <Image
                       src={getPropertyImage(property)!}
                       alt={`Property ${property.code}`}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full bg-gray-200">
