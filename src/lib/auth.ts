@@ -66,13 +66,13 @@ export function canAccessRoute(userRole: UserRole, route: string): boolean {
  * Roblox OAuth configuration
  */
 export const ROBLOX_OAUTH_CONFIG = {
-  clientId: process.env.ROBLOX_CLIENT_ID!,
+  clientId: process.env.NEXT_PUBLIC_ROBLOX_CLIENT_ID || process.env.ROBLOX_CLIENT_ID!,
   clientSecret: process.env.ROBLOX_CLIENT_SECRET!,
-  authorizeUrl: 'https://www.roblox.com/oauth2/authorize',
-  tokenUrl: 'https://www.roblox.com/oauth2/token',
-  userInfoUrl: 'https://users.roblox.com/v1/users/authenticated',
+  authorizeUrl: 'https://apis.roblox.com/oauth/v1/authorize',
+  tokenUrl: 'https://apis.roblox.com/oauth/v1/token',
+  userInfoUrl: 'https://apis.roblox.com/oauth/v1/userinfo',
   scope: 'openid profile',
-  redirectUri: `${process.env.NEXTAUTH_URL}/api/auth/callback/roblox`,
+  redirectUri: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/callback`,
 };
 
 /**
@@ -102,19 +102,19 @@ export async function exchangeCodeForToken(code: string): Promise<{
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${Buffer.from(
-        `${ROBLOX_OAUTH_CONFIG.clientId}:${ROBLOX_OAUTH_CONFIG.clientSecret}`
-      ).toString('base64')}`,
     },
     body: new URLSearchParams({
+      client_id: ROBLOX_OAUTH_CONFIG.clientId,
+      client_secret: ROBLOX_OAUTH_CONFIG.clientSecret,
       grant_type: 'authorization_code',
       code,
-      redirect_uri: ROBLOX_OAUTH_CONFIG.redirectUri,
     }),
   });
   
   if (!response.ok) {
-    throw new Error('Failed to exchange code for token');
+    const errorText = await response.text();
+    console.error('Token exchange failed:', response.status, errorText);
+    throw new Error(`Failed to exchange code for token: ${response.status}`);
   }
   
   return response.json();
@@ -135,14 +135,16 @@ export async function getRobloxUser(accessToken: string): Promise<{
   });
   
   if (!response.ok) {
-    throw new Error('Failed to get user info');
+    const errorText = await response.text();
+    console.error('User info failed:', response.status, errorText);
+    throw new Error(`Failed to get user info: ${response.status}`);
   }
   
   const userData = await response.json();
   
   return {
-    id: userData.id.toString(),
-    username: userData.name,
-    displayName: userData.displayName,
+    id: userData.sub, // Roblox uses 'sub' for user ID
+    username: userData.preferred_username, // Roblox username
+    displayName: userData.name, // Roblox display name
   };
 } 
