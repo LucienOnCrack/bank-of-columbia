@@ -263,13 +263,6 @@ export default function PropertiesPage() {
                       <ImageIcon className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
-                  
-                  {/* Status Badge */}
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30 backdrop-blur-sm">
-                      Available
-                    </Badge>
-                  </div>
 
                   {/* Property Type Badge */}
                   <div className="absolute top-3 left-3">
@@ -302,9 +295,14 @@ export default function PropertiesPage() {
 
                 <CardContent className="pt-0">
                   <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Building className="h-3 w-3 mr-2" />
-                      {property.neighbourhood}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Building className="h-3 w-3 mr-2" />
+                        {property.neighbourhood}
+                      </div>
+                      <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30">
+                        Available
+                      </Badge>
                     </div>
                     
                     <div className="flex items-center text-sm text-gray-600">
