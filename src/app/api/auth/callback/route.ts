@@ -44,15 +44,22 @@ export async function GET(request: NextRequest) {
       
       user = updatedUser;
     } else {
-      // Create new user
+      // Create new user - let database auto-generate UUID
+      console.log('Creating user with data:', {
+        roblox_id: robloxUser.id,
+        roblox_name: robloxUser.username,
+        role: 'user',
+        balance: 0,
+      });
+      
       const { data: newUser, error: createError } = await supabase
         .from('users')
-        .insert({
+        .insert([{
           roblox_id: robloxUser.id,
           roblox_name: robloxUser.username,
           role: 'user',
           balance: 0,
-        })
+        }])
         .select()
         .single();
       

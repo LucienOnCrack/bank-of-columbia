@@ -2,9 +2,15 @@ import { createClient } from '@supabase/supabase-js';
 import { User, Property, Transaction } from '@/types/user';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use service role for all operations since we handle auth in API routes
+export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Database type definitions for Supabase
 export interface Database {
@@ -29,8 +35,13 @@ export interface Database {
   };
 }
 
-// Typed Supabase client
-export const typedSupabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Typed Supabase client with service role for secure operations
+export const typedSupabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Helper functions for common database operations
 export const userOperations = {
