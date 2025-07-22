@@ -250,7 +250,7 @@ export default function PropertiesPage() {
             {filteredProperties.map((property) => (
               <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
                 {/* Property Image */}
-                <div className="relative h-48 bg-gray-200">
+                <div className="relative h-48">
                   {getPropertyImage(property) ? (
                     <Image
                       src={getPropertyImage(property)!}
@@ -259,14 +259,14 @@ export default function PropertiesPage() {
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex items-center justify-center h-full bg-gray-200">
                       <ImageIcon className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
                   
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3">
-                    <Badge className="bg-green-500 text-white hover:bg-green-600">
+                    <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30 backdrop-blur-sm">
                       Available
                     </Badge>
                   </div>
@@ -292,7 +292,7 @@ export default function PropertiesPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-2xl font-bold text-black">
                         {formatPrice(property.leasePrice)}
                       </div>
                       <div className="text-xs text-gray-500">per month</div>
@@ -311,13 +311,6 @@ export default function PropertiesPage() {
                       <DollarSign className="h-3 w-3 mr-2" />
                       Lease Available
                     </div>
-                  </div>
-
-                  {/* Call to Action */}
-                  <div className="mt-4 pt-4 border-t">
-                    <Button className="w-full" variant="outline">
-                      View Details
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
