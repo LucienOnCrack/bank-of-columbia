@@ -277,11 +277,14 @@ export default function PropertiesPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
-                        {property.code}
+                        {property.neighbourhood}
                       </CardTitle>
-                      <div className="flex items-center text-sm text-gray-600 mb-2">
+                      <div className="flex items-center text-sm text-gray-600 mb-1">
                         <MapPin className="h-3 w-3 mr-1" />
                         {property.municipality}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {property.code}
                       </div>
                     </div>
                     <div className="text-right">
@@ -294,21 +297,10 @@ export default function PropertiesPage() {
                 </CardHeader>
 
                 <CardContent className="pt-0">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Building className="h-3 w-3 mr-2" />
-                        {property.neighbourhood}
-                      </div>
-                      <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30">
-                        Available
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <DollarSign className="h-3 w-3 mr-2" />
-                      Lease Available
-                    </div>
+                  <div className="flex justify-end">
+                    <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30">
+                      Available
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
