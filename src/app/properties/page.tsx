@@ -15,7 +15,6 @@ import {
 import { PropertyData, PropertyType } from '@/types/property';
 import { 
   MapPin,
-  DollarSign,
   Building,
   Search,
   SlidersHorizontal,

@@ -3,7 +3,7 @@ import { getCurrentUserFromRequest } from '@/lib/auth';
 import { createClient } from '@supabase/supabase-js';
 
 // PUT - Update transaction
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const sessionData = getCurrentUserFromRequest(request);
     
@@ -41,7 +41,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    const transactionId = params.id;
+    const { id } = await params;
+    const transactionId = id;
     const body = await request.json();
     const { fromUser, amount, description, date, type } = body;
 
@@ -89,7 +90,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE - Delete transaction
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const sessionData = getCurrentUserFromRequest(request);
     
@@ -127,7 +128,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    const transactionId = params.id;
+    const { id } = await params;
+    const transactionId = id;
 
     // Delete transaction
     const { error: deleteError } = await supabaseAdmin

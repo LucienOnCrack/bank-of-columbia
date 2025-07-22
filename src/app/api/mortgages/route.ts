@@ -33,9 +33,22 @@ interface DatabaseMortgage {
   created_at: string;
   updated_at: string;
   created_by: string;
-  property?: any;
-  user?: any;
-  created_by_user?: any;
+  property?: {
+    id: string;
+    code: string;
+    municipality: string;
+    neighbourhood: string;
+    holder_roblox_name: string;
+  };
+  user?: {
+    id: string;
+    roblox_name: string;
+    roblox_id: string;
+  };
+  created_by_user?: {
+    id: string;
+    roblox_name: string;
+  };
 }
 
 // Helper function to transform database fields to frontend format
@@ -258,7 +271,20 @@ export async function PUT(request: NextRequest) {
     }
 
     // Extract updated mortgage data
-    const updateData: any = {};
+    const updateData: Partial<{
+      property_id: string;
+      user_id: string;
+      amount_total: number;
+      start_date: string;
+      payment_frequency: string;
+      duration_days: number;
+      initial_deposit: number;
+      status: string;
+      amount_paid: number;
+      next_payment_due: string;
+      last_payment_date: string;
+      notes: string;
+    }> = {};
     if (body.propertyId) updateData.property_id = body.propertyId;
     if (body.userId) updateData.user_id = body.userId;
     if (body.amountTotal) updateData.amount_total = parseFloat(body.amountTotal);

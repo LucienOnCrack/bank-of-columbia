@@ -2,8 +2,7 @@
 
 import { useAuth } from '@/components/AuthProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
 import { 
   DollarSign, 
   Building, 
@@ -12,10 +11,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Home,
-  Clock,
-  AlertTriangle
+
 } from 'lucide-react';
-import Link from 'next/link';
+
 import { useEffect, useState } from 'react';
 
 interface Property {
@@ -62,12 +60,6 @@ export default function DashboardPage() {
   const [mortgages, setMortgages] = useState<Mortgage[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
-
   const fetchDashboardData = async () => {
     try {
       // Fetch real properties data
@@ -88,7 +80,7 @@ export default function DashboardPage() {
           const transactionsData = await transactionsResponse.json();
           // Filter to only show user's transactions
           const userTransactions = transactionsData.transactions?.filter(
-            (t: any) => t.user_id === user?.id
+            (t: { user_id: string }) => t.user_id === user?.id
           ) || [];
           setTransactions(userTransactions); // Show all user transactions
         }
@@ -103,7 +95,7 @@ export default function DashboardPage() {
           const mortgagesData = await mortgagesResponse.json();
           // Filter to only show user's mortgages
           const userMortgages = mortgagesData.mortgages?.filter(
-            (m: any) => m.userId === user?.id && m.status === 'active'
+            (m: { userId: string; status: string }) => m.userId === user?.id && m.status === 'active'
           ) || [];
           setMortgages(userMortgages);
         }
@@ -116,6 +108,13 @@ export default function DashboardPage() {
       setDataLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   if (loading) {
     return (
@@ -141,9 +140,7 @@ export default function DashboardPage() {
     ? Math.min(...activeMortgages.map(m => new Date(m.nextPaymentDue).getTime()))
     : null;
   
-  const overdueMortgages = activeMortgages.filter(m => 
-    new Date(m.nextPaymentDue) < new Date()
-  );
+
 
   return (
     <div className="container mx-auto px-4 py-8">
