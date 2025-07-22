@@ -71,7 +71,7 @@ export const ROBLOX_OAUTH_CONFIG = {
   authorizeUrl: 'https://apis.roblox.com/oauth/v1/authorize',
   tokenUrl: 'https://apis.roblox.com/oauth/v1/token',
   userInfoUrl: 'https://apis.roblox.com/oauth/v1/userinfo',
-  scope: 'openid profile',
+  scope: 'openid',
   redirectUri: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/callback`,
 };
 
