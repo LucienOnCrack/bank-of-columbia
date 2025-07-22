@@ -106,7 +106,12 @@ export function verifySessionToken(token: string): {
   role: string;
 } | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      robloxId: string;
+      username: string;
+      role: string;
+    };
     return {
       userId: decoded.userId,
       robloxId: decoded.robloxId,

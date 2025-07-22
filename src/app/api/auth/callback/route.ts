@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForToken, getRobloxUser, createSessionToken } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request: NextRequest) {
   try {
+    // Create admin client for server-side operations
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
-    const state = searchParams.get('state');
 
     if (!code) {
       console.error('No authorization code received');
@@ -20,7 +31,7 @@ export async function GET(request: NextRequest) {
     const robloxUser = await getRobloxUser(tokenData.access_token);
 
     // Check if user exists in our database
-    const { data: existingUser, error: fetchError } = await supabase
+    const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('roblox_id', robloxUser.id)
@@ -30,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     if (existingUser) {
       // Update existing user's Roblox name in case it changed
-      const { data: updatedUser, error: updateError } = await supabase
+      const { data: updatedUser, error: updateError } = await supabaseAdmin
         .from('users')
         .update({ roblox_name: robloxUser.username })
         .eq('roblox_id', robloxUser.id)
@@ -44,22 +55,20 @@ export async function GET(request: NextRequest) {
       
       user = updatedUser;
     } else {
-      // Create new user - let database auto-generate UUID
-      console.log('Creating user with data:', {
+      // Create new user - explicitly generate UUID to avoid database issues
+      const userData = {
+        id: crypto.randomUUID(), // Always generate UUID explicitly
         roblox_id: robloxUser.id,
         roblox_name: robloxUser.username,
-        role: 'user',
+        role: 'user' as const,
         balance: 0,
-      });
+      };
       
-      const { data: newUser, error: createError } = await supabase
+      console.log('Creating user with data:', userData);
+      
+      const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
-        .insert([{
-          roblox_id: robloxUser.id,
-          roblox_name: robloxUser.username,
-          role: 'user',
-          balance: 0,
-        }])
+        .insert([userData])
         .select()
         .single();
       
