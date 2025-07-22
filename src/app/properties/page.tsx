@@ -250,7 +250,7 @@ export default function PropertiesPage() {
             {filteredProperties.map((property) => (
               <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 group p-0">
                 {/* Property Image */}
-                <div className="relative h-56">
+                <div className="relative h-64">
                   {getPropertyImage(property) ? (
                     <Image
                       src={getPropertyImage(property)!}
@@ -273,7 +273,7 @@ export default function PropertiesPage() {
                 </div>
 
                 {/* Property Details */}
-                <CardHeader className="pb-3 px-6 pt-6">
+                <CardHeader className="pb-2 px-4 pt-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
@@ -296,7 +296,7 @@ export default function PropertiesPage() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="pt-0 px-6 pb-6">
+                <CardContent className="pt-0 px-4 pb-4">
                   <div className="flex justify-end">
                     <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30">
                       Available
