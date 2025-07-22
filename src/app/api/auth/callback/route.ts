@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForToken, getRobloxUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request: NextRequest) {
   try {
+    // Create admin client for user creation
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const error = searchParams.get('error');
@@ -44,9 +57,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/auth/error', request.url));
       }
     } else {
-      // Create Supabase auth user first
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      // Create Supabase auth user first using admin client
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: `${robloxUser.id}@roblox.temp`, // Temporary email since Roblox doesn't provide one
+        password: robloxUser.id, // Use Roblox ID as password for consistency
         email_confirm: true,
         user_metadata: {
           roblox_id: robloxUser.id,
@@ -60,8 +74,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/auth/error', request.url));
       }
       
-      // Create user in our custom users table
-      const { data: newUser, error: createError } = await supabase
+      // Create user in our custom users table using admin client
+      const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
         .insert({
           id: authUser.user.id,
