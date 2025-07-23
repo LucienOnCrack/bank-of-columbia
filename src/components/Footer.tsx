@@ -53,9 +53,6 @@ export function Footer() {
               <Link href="/employee" className="block text-muted-foreground hover:text-primary transition-colors">
                 Employee Portal
               </Link>
-              <Link href="/admin" className="block text-muted-foreground hover:text-primary transition-colors">
-                Admin Panel
-              </Link>
             </div>
           </div>
 
@@ -63,9 +60,6 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Support</h3>
             <div className="space-y-2 text-sm">
-              <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
-                Help Center
-              </Link>
               <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
                 Contact Support
               </Link>
@@ -88,12 +82,6 @@ export function Footer() {
               <Link href="/privacy" className="block text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
-                Cookie Policy
-              </Link>
-              <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
-                Security
-              </Link>
             </div>
           </div>
         </div>
@@ -102,23 +90,6 @@ export function Footer() {
         <div className="border-t mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <div className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Bank of Columbia. All rights reserved.
-          </div>
-          <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-            <span>Built for the Roblox Community</span>
-            <div className="flex items-center space-x-2">
-              <span>Powered by</span>
-              <Link href="https://nextjs.org" className="hover:text-primary transition-colors">
-                Next.js
-              </Link>
-              <span>•</span>
-              <Link href="https://supabase.com" className="hover:text-primary transition-colors">
-                Supabase
-              </Link>
-              <span>•</span>
-              <Link href="https://vercel.com" className="hover:text-primary transition-colors">
-                Vercel
-              </Link>
-            </div>
           </div>
         </div>
       </div>

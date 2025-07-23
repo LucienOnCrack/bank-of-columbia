@@ -5,21 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Footer } from '@/components/Footer';
 import { getRobloxAuthUrl } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { DollarSign, Shield, Users, Building } from 'lucide-react';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    console.log('HomePage: loading =', loading, 'user =', !!user, user?.roblox_name);
-    if (!loading && user) {
-      console.log('HomePage: Redirecting to dashboard for user:', user.roblox_name);
-      router.push('/dashboard');
-    }
-  }, [user, loading, router]);
 
   const handleRobloxLogin = () => {
     const oauthUrl = getRobloxAuthUrl();
@@ -28,8 +17,8 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
