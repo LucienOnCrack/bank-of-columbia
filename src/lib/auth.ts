@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import { User } from '@/types/user';
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'fallback-secret-key-for-development';
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-for-development';
 const TOKEN_EXPIRY = '7d'; // 7 days
 
 export const ROBLOX_OAUTH_CONFIG = {
@@ -12,7 +12,7 @@ export const ROBLOX_OAUTH_CONFIG = {
   tokenUrl: 'https://apis.roblox.com/oauth/v1/token',
   userInfoUrl: 'https://apis.roblox.com/oauth/v1/userinfo',
   scope: 'openid profile',
-  redirectUri: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/callback`,
+  redirectUri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback`,
 };
 
 // Generate Roblox OAuth URL

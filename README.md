@@ -71,11 +71,9 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ROBLOX_CLIENT_ID=your-client-id
 ROBLOX_CLIENT_SECRET=your-client-secret
 
-# NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret
-
 # Application Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+JWT_SECRET=your-jwt-secret
 NODE_ENV=development
 ```
 
@@ -170,8 +168,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-production-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-production-service-key
 ROBLOX_CLIENT_ID=your-production-client-id
 ROBLOX_CLIENT_SECRET=your-production-client-secret
-NEXTAUTH_URL=https://your-domain.com
-NEXTAUTH_SECRET=your-production-secret
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+JWT_SECRET=your-production-secret
 NODE_ENV=production
 ```
 
@@ -239,7 +237,7 @@ npm run type-check
 Make sure all required environment variables are set:
 - Supabase URL and keys
 - Roblox OAuth credentials  
-- NextAuth configuration
+- JWT configuration
 
 ### Database Issues
 
