@@ -59,6 +59,7 @@ export function Navbar() {
               </Link>
               <div className="flex flex-col">
                 <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
+                <p className="text-xs text-muted-foreground">Welcome back, {user.roblox_name}</p>
               </div>
             </div>
           )}
