@@ -15,10 +15,6 @@ const nextConfig: NextConfig = {
   // Bundle analyzer and optimization  
   experimental: {
     webVitalsAttribution: ['CLS', 'LCP'],
-    // Aggressive build optimizations
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    // Faster builds
-    useWasmBinary: false,
   },
   
   // Turbopack configuration (stable)
@@ -41,49 +37,14 @@ const nextConfig: NextConfig = {
   
   // Build performance optimizations
   webpack: (config, { dev, isServer }) => {
-    // AGGRESSIVE build optimizations for speed
-    if (!dev) {
-      // Simplified chunk splitting for speed
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        minSize: 20000,
-        maxSize: 100000,
-        cacheGroups: {
-          default: false,
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: 10,
-            reuseExistingChunk: true,
-            enforce: true,
-          },
-        },
-        maxInitialRequests: 5,
-        maxAsyncRequests: 5,
-      };
-
-      // Aggressive tree shaking
-      config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
-      
-      // Keep minification for smaller bundles
-      config.optimization.minimize = true;
-    }
-
-    // Super fast module resolution
+    // Optimize module resolution
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, './src'),
     };
 
-    // Minimal stats output
-    config.stats = 'errors-warnings';
-    
-    // Faster builds with cache
-    config.cache = {
-      type: 'filesystem',
-    };
+    // Optimize build performance
+    config.stats = 'minimal'; // Reduce build output verbosity
     
     return config;
   },
