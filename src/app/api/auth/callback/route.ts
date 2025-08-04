@@ -3,7 +3,11 @@ import { exchangeCodeForToken, getRobloxUser, createSessionToken } from '@/lib/a
 import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request: NextRequest) {
+  // Environment-aware base URL for redirects
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
   try {
+    
     // Create admin client for server-side operations
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     if (!code) {
       console.error('No authorization code received');
-      return NextResponse.redirect(new URL('/auth/error', request.url));
+      return NextResponse.redirect(new URL('/auth/error', baseUrl));
     }
 
     // Exchange code for access token
@@ -50,7 +54,7 @@ export async function GET(request: NextRequest) {
       
       if (updateError) {
         console.error('Error updating user:', updateError);
-        return NextResponse.redirect(new URL('/auth/error', request.url));
+        return NextResponse.redirect(new URL('/auth/error', baseUrl));
       }
       
       user = updatedUser;
@@ -75,7 +79,7 @@ export async function GET(request: NextRequest) {
       
       if (createError || !newUser) {
         console.error('Error creating user:', createError);
-        return NextResponse.redirect(new URL('/auth/error', request.url));
+        return NextResponse.redirect(new URL('/auth/error', baseUrl));
       }
       
       user = newUser;
@@ -86,7 +90,7 @@ export async function GET(request: NextRequest) {
     // Setting session token
 
     // Create response and set cookie
-    const response = NextResponse.redirect(new URL('/dashboard', request.url));
+    const response = NextResponse.redirect(new URL('/dashboard', baseUrl));
     
     // Set secure HTTP-only cookie
     response.cookies.set('session-token', sessionToken, {
@@ -102,6 +106,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return NextResponse.redirect(new URL('/auth/error', request.url));
+    return NextResponse.redirect(new URL('/auth/error', baseUrl));
   }
 } 
