@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
 
     // Check if user has admin role (using fresh data from database)
     if (currentUser.role !== 'admin') {
-      console.log(`Access denied for user ${currentUser.roblox_name} with role ${currentUser.role}`);
+      // Access denied - insufficient permissions
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    console.log(`User ${currentUser.roblox_name} (${currentUser.role}) accessing admin transactions endpoint`);
+    // Admin accessing transactions endpoint
 
     // Fetch all transactions with related data
     const { data: transactions, error } = await supabaseAdmin
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user has admin role
     if (currentUser.role !== 'admin') {
-      console.log(`Access denied for user ${currentUser.roblox_name} with role ${currentUser.role}`);
+      // Access denied - insufficient permissions
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       created_by_user: users?.find(u => u.id === transaction.created_by)
     };
 
-    console.log(`User ${currentUser.roblox_name} created manual transaction: ${description}`);
+    // Manual transaction created successfully
 
     return NextResponse.json({ transaction: enrichedTransaction }, { status: 201 });
   } catch (error) {

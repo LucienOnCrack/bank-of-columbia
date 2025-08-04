@@ -2,7 +2,16 @@ import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import { User } from '@/types/user';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-for-development';
+const JWT_SECRET = (() => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is required but not set. Please set a secure JWT secret.');
+  }
+  if (secret === 'fallback-secret-key-for-development') {
+    throw new Error('JWT_SECRET is using development fallback value. Please set a secure production secret.');
+  }
+  return secret;
+})();
 const TOKEN_EXPIRY = '7d'; // 7 days
 
 export const ROBLOX_OAUTH_CONFIG = {
@@ -77,21 +86,21 @@ export async function getRobloxUser(accessToken: string): Promise<{
   }
 
   const userData = await response.json();
-  console.log('Raw Roblox user data:', userData);
+  // Processing Roblox user data
 
   // NO FALLBACKS - if we don't have real data, FAIL
   if (!userData.preferred_username) {
-    console.error('No username in Roblox response:', userData);
+    console.error('No username in Roblox response');
     throw new Error('Roblox API did not return a valid username');
   }
 
   if (!userData.name) {
-    console.error('No display name in Roblox response:', userData);
+    console.error('No display name in Roblox response');
     throw new Error('Roblox API did not return a valid display name');
   }
 
   if (!userData.sub) {
-    console.error('No user ID in Roblox response:', userData);
+    console.error('No user ID in Roblox response');
     throw new Error('Roblox API did not return a valid user ID');
   }
 

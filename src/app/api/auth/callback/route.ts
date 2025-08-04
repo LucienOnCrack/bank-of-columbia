@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         balance: 0,
       };
       
-      console.log('Creating user with data:', userData);
+      // User creation in progress
       
       const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     // Create JWT session token
     const sessionToken = createSessionToken(user);
-    console.log('Setting session token for user:', user.roblox_name);
+    // Setting session token
 
     // Create response and set cookie
     const response = NextResponse.redirect(new URL('/dashboard', request.url));
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       path: '/',
     });
 
-    console.log('Redirecting to dashboard with session token set');
+    // Redirecting to dashboard
     return response;
 
   } catch (error) {

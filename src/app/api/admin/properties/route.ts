@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
 
     // Check if user has admin or employee role (using fresh data from database)
     if (currentUser.role !== 'admin' && currentUser.role !== 'employee') {
-      console.log(`Access denied for user ${currentUser.roblox_name} with role ${currentUser.role}`);
+      // Access denied - insufficient permissions
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    console.log(`User ${currentUser.roblox_name} (${currentUser.role}) accessing admin properties endpoint`);
+    // Admin accessing properties endpoint
 
     // Fetch all properties with related data
     const { data: properties, error } = await supabaseAdmin

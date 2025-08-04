@@ -37,7 +37,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Check if user has admin role
     if (currentUser.role !== 'admin') {
-      console.log(`Access denied for user ${currentUser.roblox_name} with role ${currentUser.role}`);
+      // Access denied - insufficient permissions
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }, { status: 500 });
     }
 
-    console.log(`User ${currentUser.roblox_name} updated transaction ${transactionId}`);
+    // Transaction updated successfully
 
     return NextResponse.json({ transaction }, { status: 200 });
   } catch (error) {
@@ -124,7 +124,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     // Check if user has admin role
     if (currentUser.role !== 'admin') {
-      console.log(`Access denied for user ${currentUser.roblox_name} with role ${currentUser.role}`);
+      // Access denied - insufficient permissions
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -145,7 +145,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       }, { status: 500 });
     }
 
-    console.log(`User ${currentUser.roblox_name} deleted transaction ${transactionId}`);
+    // Transaction deleted successfully
 
     return NextResponse.json({ message: 'Transaction deleted successfully' }, { status: 200 });
   } catch (error) {
