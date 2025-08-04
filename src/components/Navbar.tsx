@@ -30,6 +30,42 @@ export function Navbar() {
     return null;
   }
 
+  // Don't render navbar on dashboard page - it should be fullscreen
+  const isDashboardPage = pathname === '/dashboard';
+  if (isDashboardPage) {
+    return null;
+  }
+
+  // Don't render navbar on payments page - it should be fullscreen
+  const isPaymentsPage = pathname === '/payments';
+  if (isPaymentsPage) {
+    return null;
+  }
+
+  // Don't render navbar on mortgages page - it should be fullscreen
+  const isMortgagesPage = pathname === '/mortgages';
+  if (isMortgagesPage) {
+    return null;
+  }
+
+  // Don't render navbar on property detail pages - they should be fullscreen
+  const isPropertyPage = pathname.startsWith('/property/');
+  if (isPropertyPage) {
+    return null;
+  }
+
+  // Don't render navbar on landing page - it has its own header
+  const isLandingPage = pathname === '/';
+  if (isLandingPage) {
+    return null;
+  }
+
+  // Don't render navbar on login page - it has its own header
+  const isLoginPage = pathname === '/login';
+  if (isLoginPage) {
+    return null;
+  }
+
   // Get page title for different pages
   const getPageTitle = () => {
     if (!isMounted) return null;
@@ -168,7 +204,7 @@ export function Navbar() {
 
           {/* Login button for guests */}
           {!loading && !user && (
-            <Link href="/auth/login">
+            <Link href="/login">
               <Button variant="outline" size="sm">
                 Login
               </Button>

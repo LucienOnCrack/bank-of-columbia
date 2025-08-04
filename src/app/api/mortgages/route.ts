@@ -3,6 +3,8 @@ import { getCurrentUserFromRequest } from '@/lib/auth';
 import { createClient } from '@supabase/supabase-js';
 import { MortgageData } from '@/types/mortgage';
 
+
+
 // Create admin client for server-side operations
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +27,8 @@ interface DatabaseMortgage {
   start_date: string;
   payment_frequency: string;
   duration_days: number;
+  interest_rate: number;
+  interest_type: string;
   next_payment_due: string;
   last_payment_date?: string;
   status: string;
@@ -39,6 +43,7 @@ interface DatabaseMortgage {
     municipality: string;
     neighbourhood: string;
     holder_roblox_name: string;
+    property_value: number;
   };
   user?: {
     id: string;
@@ -60,8 +65,10 @@ function transformMortgageForFrontend(dbMortgage: DatabaseMortgage): MortgageDat
     amountTotal: dbMortgage.amount_total,
     amountPaid: dbMortgage.amount_paid,
     startDate: dbMortgage.start_date,
-    paymentFrequency: dbMortgage.payment_frequency as 'daily' | 'weekly',
+    paymentFrequency: dbMortgage.payment_frequency as 'daily' | 'bi-daily' | 'weekly',
     durationDays: dbMortgage.duration_days,
+    interestRate: dbMortgage.interest_rate,
+    interestType: dbMortgage.interest_type as 'fixed' | 'compound',
     nextPaymentDue: dbMortgage.next_payment_due,
     lastPaymentDate: dbMortgage.last_payment_date,
     status: dbMortgage.status as 'active' | 'completed' | 'defaulted',
@@ -76,6 +83,7 @@ function transformMortgageForFrontend(dbMortgage: DatabaseMortgage): MortgageDat
       municipality: dbMortgage.property.municipality,
       neighbourhood: dbMortgage.property.neighbourhood,
       holderRobloxName: dbMortgage.property.holder_roblox_name,
+      leasePrice: dbMortgage.property.property_value,
     } : undefined,
     user: dbMortgage.user ? {
       id: dbMortgage.user.id,
@@ -119,7 +127,7 @@ export async function GET(request: NextRequest) {
       .from('mortgages')
       .select(`
         *,
-        property:property_id(id, code, municipality, neighbourhood, holder_roblox_name),
+        property:property_id(id, code, municipality, neighbourhood, holder_roblox_name, property_value),
         user:user_id(id, roblox_name, roblox_id),
         created_by_user:created_by(id, roblox_name)
       `)
@@ -175,8 +183,9 @@ export async function POST(request: NextRequest) {
       start_date: body.startDate,
       payment_frequency: body.paymentFrequency,
       duration_days: parseInt(body.durationDays),
+      interest_rate: parseFloat(body.interestRate || 0.05),
+      interest_type: body.interestType || 'fixed',
       initial_deposit: parseFloat(body.initialDeposit || 0),
-
       created_by: currentUser.id
     };
 
@@ -189,14 +198,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate next payment due date
-    const startDate = new Date(mortgageData.start_date);
+    const startDate = new Date(mortgageData.start_date + 'T00:00:00.000Z'); // Ensure UTC to avoid timezone issues
     const nextPaymentDue = new Date(startDate);
+    
+    // Debug logging
+    console.log('Creating mortgage with start date:', mortgageData.start_date);
+    console.log('Parsed start date:', startDate.toISOString());
+    console.log('Payment frequency:', mortgageData.payment_frequency);
     
     if (mortgageData.payment_frequency === 'daily') {
       nextPaymentDue.setDate(nextPaymentDue.getDate() + 1);
+    } else if (mortgageData.payment_frequency === 'bi-daily') {
+      nextPaymentDue.setDate(nextPaymentDue.getDate() + 2);
     } else if (mortgageData.payment_frequency === 'weekly') {
       nextPaymentDue.setDate(nextPaymentDue.getDate() + 7);
     }
+    
+    console.log('Calculated next payment due:', nextPaymentDue.toISOString().split('T')[0]);
 
     // Create mortgage
     const { data: mortgage, error } = await supabaseAdmin
@@ -208,7 +226,7 @@ export async function POST(request: NextRequest) {
       }])
       .select(`
         *,
-        property:property_id(id, code, municipality, neighbourhood, holder_roblox_name),
+        property:property_id(id, code, municipality, neighbourhood, holder_roblox_name, property_value),
         user:user_id(id, roblox_name, roblox_id),
         created_by_user:created_by(id, roblox_name)
       `)
@@ -278,6 +296,8 @@ export async function PUT(request: NextRequest) {
       start_date: string;
       payment_frequency: string;
       duration_days: number;
+      interest_rate: number;
+      interest_type: string;
       initial_deposit: number;
       status: string;
       amount_paid: number;
@@ -291,12 +311,38 @@ export async function PUT(request: NextRequest) {
     if (body.startDate) updateData.start_date = body.startDate;
     if (body.paymentFrequency) updateData.payment_frequency = body.paymentFrequency;
     if (body.durationDays) updateData.duration_days = parseInt(body.durationDays);
+    if (body.interestRate !== undefined) updateData.interest_rate = parseFloat(body.interestRate);
+    if (body.interestType) updateData.interest_type = body.interestType;
     if (body.initialDeposit !== undefined) updateData.initial_deposit = parseFloat(body.initialDeposit);
 
     if (body.status) updateData.status = body.status;
     if (body.amountPaid !== undefined) updateData.amount_paid = parseFloat(body.amountPaid);
     if (body.nextPaymentDue) updateData.next_payment_due = body.nextPaymentDue;
     if (body.lastPaymentDate) updateData.last_payment_date = body.lastPaymentDate;
+
+    // If payment frequency or start date changes, recalculate next payment due
+    if (body.paymentFrequency || body.startDate) {
+      const startDateString = body.startDate || existingMortgage.start_date;
+      const startDate = new Date(startDateString + (startDateString.includes('T') ? '' : 'T00:00:00.000Z'));
+      const frequency = body.paymentFrequency || existingMortgage.payment_frequency;
+      const nextPaymentDue = new Date(startDate);
+      
+      // Debug logging for updates
+      console.log('Updating mortgage with start date:', startDateString);
+      console.log('Parsed start date:', startDate.toISOString());
+      console.log('Payment frequency:', frequency);
+      
+      if (frequency === 'daily') {
+        nextPaymentDue.setDate(nextPaymentDue.getDate() + 1);
+      } else if (frequency === 'bi-daily') {
+        nextPaymentDue.setDate(nextPaymentDue.getDate() + 2);
+      } else if (frequency === 'weekly') {
+        nextPaymentDue.setDate(nextPaymentDue.getDate() + 7);
+      }
+      
+      console.log('Updated next payment due:', nextPaymentDue.toISOString().split('T')[0]);
+      updateData.next_payment_due = nextPaymentDue.toISOString().split('T')[0];
+    }
 
     // Update mortgage
     const { data: mortgage, error } = await supabaseAdmin
@@ -305,7 +351,7 @@ export async function PUT(request: NextRequest) {
       .eq('id', mortgageId)
       .select(`
         *,
-        property:property_id(id, code, municipality, neighbourhood, holder_roblox_name),
+        property:property_id(id, code, municipality, neighbourhood, holder_roblox_name, property_value),
         user:user_id(id, roblox_name, roblox_id),
         created_by_user:created_by(id, roblox_name)
       `)

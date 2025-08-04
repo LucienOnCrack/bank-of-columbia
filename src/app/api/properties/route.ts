@@ -74,7 +74,7 @@ interface DatabaseProperty {
   holder_roblox_id: string;
   neighbourhood: string;
   code: string;
-  lease_price: number;
+  property_value: number;
   status: string;
   images: StoredPropertyImage[];
   created_at: string;
@@ -92,7 +92,7 @@ function transformPropertyForFrontend(dbProperty: DatabaseProperty) {
     holderRobloxId: dbProperty.holder_roblox_id,
     neighbourhood: dbProperty.neighbourhood,
     code: dbProperty.code,
-    leasePrice: dbProperty.lease_price,
+    leasePrice: dbProperty.property_value,
     status: dbProperty.status,
     images: dbProperty.images || [],
     created_at: dbProperty.created_at,
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       holder_roblox_id: formData.get('holderRobloxId') as string,
       neighbourhood: formData.get('neighbourhood') as string,
       code: formData.get('code') as string,
-      lease_price: parseFloat(formData.get('leasePrice') as string),
+      property_value: parseFloat(formData.get('leasePrice') as string),
       status: formData.get('status') as string,
       created_by: currentUser.id
     };
@@ -345,7 +345,7 @@ export async function PUT(request: NextRequest) {
       holder_roblox_id: formData.get('holderRobloxId') as string,
       neighbourhood: formData.get('neighbourhood') as string,
       code: formData.get('code') as string,
-      lease_price: parseFloat(formData.get('leasePrice') as string),
+      property_value: parseFloat(formData.get('leasePrice') as string),
       status: formData.get('status') as string
     };
 

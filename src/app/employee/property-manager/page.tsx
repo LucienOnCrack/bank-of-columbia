@@ -387,7 +387,7 @@ export default function PropertyManager() {
                 <TableHead>Type</TableHead>
                 <TableHead>Holder</TableHead>
                 <TableHead>Neighbourhood</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead>Property Value</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -530,14 +530,14 @@ export default function PropertyManager() {
               <h3 className="text-lg font-semibold">Financial & Holder Information</h3>
               
               <div className="space-y-2">
-                <Label htmlFor="leasePrice">Lease Price</Label>
+                <Label htmlFor="leasePrice">Property Value</Label>
                 <Input
                   id="leasePrice"
                   type="number"
                   className="w-full h-10"
                   value={formData.leasePrice === 0 ? '' : formData.leasePrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, leasePrice: e.target.value === '' ? 0 : Number(e.target.value) }))}
-                  placeholder="2500"
+                  placeholder="125000"
                 />
               </div>
 
@@ -717,14 +717,14 @@ export default function PropertyManager() {
               <h3 className="text-lg font-semibold">Financial & Holder Information</h3>
               
               <div className="space-y-2">
-                <Label htmlFor="edit-leasePrice">Lease Price</Label>
+                <Label htmlFor="edit-leasePrice">Property Value</Label>
                 <Input
                   id="edit-leasePrice"
                   type="number"
                   className="w-full h-10"
                   value={formData.leasePrice === 0 ? '' : formData.leasePrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, leasePrice: e.target.value === '' ? 0 : Number(e.target.value) }))}
-                  placeholder="2500"
+                  placeholder="125000"
                 />
               </div>
 

@@ -1,5 +1,6 @@
-export type PaymentFrequency = 'daily' | 'weekly';
+export type PaymentFrequency = 'daily' | 'bi-daily' | 'weekly';
 export type MortgageStatus = 'active' | 'completed' | 'defaulted';
+export type InterestType = 'fixed' | 'compound';
 
 export interface MortgageData {
   id: string;
@@ -10,6 +11,8 @@ export interface MortgageData {
   startDate: string; // ISO date string
   paymentFrequency: PaymentFrequency;
   durationDays: number;
+  interestRate: number; // Annual interest rate as decimal (e.g., 0.05 for 5%)
+  interestType: InterestType; // Fixed (simple) or compound interest
   nextPaymentDue: string; // ISO date string
   lastPaymentDate?: string; // ISO date string
   status: MortgageStatus;
@@ -26,6 +29,7 @@ export interface MortgageData {
     municipality: string;
     neighbourhood: string;
     holderRobloxName: string;
+    leasePrice: number;
   };
   user?: {
     id: string;
@@ -45,8 +49,9 @@ export interface MortgageFormData {
   startDate: string;
   paymentFrequency: PaymentFrequency;
   durationDays: number;
+  interestRate: number;
+  interestType: InterestType;
   initialDeposit: number;
-
 }
 
 export interface MortgagePaymentData {

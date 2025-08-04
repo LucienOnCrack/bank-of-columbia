@@ -28,6 +28,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/favicon.ico') ||
     pathname.startsWith('/public/') ||
     pathname === '/' ||
+    pathname === '/login' ||
     pathname === '/privacy' ||
     pathname === '/tos' ||
     pathname === '/properties' ||

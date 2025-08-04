@@ -21,7 +21,7 @@ interface DatabaseProperty {
   holder_roblox_id: string;
   neighbourhood: string;
   code: string;
-  lease_price: number;
+  property_value: number;
   status: string;
   images: Array<{
     id: string;
@@ -46,7 +46,7 @@ function transformPropertyForFrontend(dbProperty: DatabaseProperty) {
     holderRobloxId: dbProperty.holder_roblox_id,
     neighbourhood: dbProperty.neighbourhood,
     code: dbProperty.code,
-    leasePrice: dbProperty.lease_price,
+    leasePrice: dbProperty.property_value,
     status: dbProperty.status,
     images: dbProperty.images || [],
     created_at: dbProperty.created_at,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (maxPrice) {
-      query = query.lte('lease_price', parseFloat(maxPrice));
+      query = query.lte('property_value', parseFloat(maxPrice));
     }
 
     // Apply search if provided

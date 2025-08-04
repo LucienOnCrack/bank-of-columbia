@@ -35,7 +35,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Calendar } from '@/components/ui/calendar';
-import { MortgageData, MortgageCalculations, MortgageFormData, PaymentFrequency } from '@/types/mortgage';
+import { MortgageData, MortgageCalculations, MortgageFormData, PaymentFrequency, InterestType } from '@/types/mortgage';
 import { useState, useEffect } from 'react';
 import { 
   Plus, 
@@ -47,7 +47,8 @@ import {
   Calendar as CalendarIcon,
   AlertTriangle,
   Receipt,
-  Loader2
+  Loader2,
+  Percent
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -63,7 +64,7 @@ export default function MortgagesPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Data for form dropdowns
-  const [properties, setProperties] = useState<Array<{id: string, code: string, municipality: string, neighbourhood: string}>>([]);
+  const [properties, setProperties] = useState<Array<{id: string, code: string, municipality: string, neighbourhood: string, leasePrice: number}>>([]);
   const [users, setUsers] = useState<Array<{id: string, roblox_name: string, roblox_id: string}>>([]);
 
   // Form data
@@ -74,8 +75,109 @@ export default function MortgagesPage() {
     startDate: '',
     paymentFrequency: 'weekly',
     durationDays: 365,
+    interestRate: 0.05, // Default 5% annual interest rate
+    interestType: 'fixed', // Default to fixed interest
     initialDeposit: 0
   });
+
+  // Calculate mortgage amount automatically
+  const calculateMortgageAmount = () => {
+    if (!formData.propertyId || !properties.length) {
+      return 0;
+    }
+    
+    const selectedProperty = properties.find(p => p.id === formData.propertyId);
+    if (!selectedProperty || !selectedProperty.leasePrice) {
+      return 0;
+    }
+    
+    const propertyPrice = selectedProperty.leasePrice;
+    const deposit = formData.initialDeposit || 0;
+    const principal = propertyPrice - deposit;
+    
+    if (principal <= 0) return 0;
+    
+    const annualRate = formData.interestRate || 0;
+    const interestType = formData.interestType || 'fixed';
+    
+    if (interestType === 'fixed') {
+      // Fixed (simple) interest calculation - total interest is independent of duration
+      // Duration only affects payment schedule, not total amount
+      const totalInterest = principal * annualRate;
+      return Math.round((principal + totalInterest) * 100) / 100;
+    } else {
+      // Compound interest calculation - interest compounds on outstanding balance
+      const periodsPerDay = formData.paymentFrequency === 'daily' ? 1 : 
+                           formData.paymentFrequency === 'bi-daily' ? 0.5 : 1/7;
+      const totalPeriods = Math.ceil(formData.durationDays * periodsPerDay);
+      const periodRate = annualRate; // Rate is per period
+      
+      // Calculate total amount using declining balance method
+      // Each payment covers interest + equal portion of principal
+      let balance = principal;
+      let totalPaid = 0;
+      const principalPerPayment = principal / totalPeriods;
+      
+      // Simulate the payments where each payment = interest + fixed principal amount
+      for (let i = 0; i < totalPeriods; i++) {
+        const interestPayment = balance * periodRate;
+        const totalPayment = interestPayment + principalPerPayment;
+        balance -= principalPerPayment;
+        totalPaid += totalPayment;
+      }
+      
+      return Math.round(totalPaid * 100) / 100;
+    }
+  };
+
+  // Calculate individual payment amount for display
+  const calculateIndividualPayment = () => {
+    if (!formData.propertyId || !properties.length || formData.amountTotal === 0) {
+      return 0;
+    }
+    
+    const selectedProperty = properties.find(p => p.id === formData.propertyId);
+    if (!selectedProperty || !selectedProperty.leasePrice) {
+      return 0;
+    }
+    
+    const principal = formData.amountTotal - formData.initialDeposit;
+    if (principal <= 0) return 0;
+    
+    return calculatePaymentAmount(
+      principal,
+      formData.interestRate,
+      formData.durationDays,
+      formData.paymentFrequency,
+      formData.interestType
+    );
+  };
+
+  // Format payment frequency for display
+  const formatPaymentFrequency = (frequency: PaymentFrequency) => {
+    switch (frequency) {
+      case 'daily': return 'Daily';
+      case 'bi-daily': return 'Bi-Daily';
+      case 'weekly': return 'Weekly';
+      default: return 'Payment';
+    }
+  };
+
+  // Auto-calculate mortgage amount when relevant fields change
+  useEffect(() => {
+    const calculatedAmount = calculateMortgageAmount();
+    if (calculatedAmount > 0 && calculatedAmount !== formData.amountTotal) {
+      setFormData(prev => ({ ...prev, amountTotal: calculatedAmount }));
+    }
+  }, [
+    formData.propertyId, 
+    formData.initialDeposit, 
+    formData.interestRate, 
+    formData.interestType,
+    formData.durationDays, // Always include but calculation will ignore for fixed
+    formData.paymentFrequency, // Always include but calculation will ignore for fixed
+    properties
+  ]);
 
   // Payment form data
   const [paymentData, setPaymentData] = useState({
@@ -143,6 +245,8 @@ export default function MortgagesPage() {
       startDate: '',
       paymentFrequency: 'weekly',
       durationDays: 365,
+      interestRate: 0.05, // Default 5% annual interest rate
+      interestType: 'fixed', // Default to fixed interest
       initialDeposit: 0
     });
   };
@@ -165,12 +269,13 @@ export default function MortgagesPage() {
     setFormData({
       propertyId: mortgage.propertyId,
       userId: mortgage.userId,
-      amountTotal: mortgage.amountTotal,
+      amountTotal: 0, // Let this be calculated automatically
       startDate: mortgage.startDate,
       paymentFrequency: mortgage.paymentFrequency,
       durationDays: mortgage.durationDays,
+      interestRate: mortgage.interestRate,
+      interestType: mortgage.interestType,
       initialDeposit: mortgage.initialDeposit,
-
     });
     setIsEditDialogOpen(true);
   };
@@ -211,21 +316,78 @@ export default function MortgagesPage() {
     }
   };
 
+  // Helper function to calculate payment amount with interest
+  const calculatePaymentAmount = (
+    principal: number,
+    annualInterestRate: number,
+    durationDays: number,
+    paymentFrequency: 'daily' | 'bi-daily' | 'weekly',
+    interestType: 'fixed' | 'compound' = 'fixed'
+  ): number => {
+    if (annualInterestRate === 0) {
+      // Simple case: no interest, just divide evenly
+      const periodsPerDay = paymentFrequency === 'daily' ? 1 : 
+                           paymentFrequency === 'bi-daily' ? 0.5 : 1/7;
+      const totalPayments = Math.ceil(durationDays * periodsPerDay);
+      return principal / totalPayments;
+    }
+
+    const periodsPerDay = paymentFrequency === 'daily' ? 1 : 
+                         paymentFrequency === 'bi-daily' ? 0.5 : 1/7;
+    const totalPayments = Math.ceil(durationDays * periodsPerDay);
+
+    if (interestType === 'fixed') {
+      // Fixed interest: Total interest is independent of duration
+      const totalInterest = principal * annualInterestRate;
+      const totalAmount = principal + totalInterest;
+      return totalAmount / totalPayments;
+    } else {
+      // Compound interest: Use declining balance method
+      const periodRate = annualInterestRate; // Rate is already per period
+      
+      if (periodRate === 0) {
+        return principal / totalPayments;
+      }
+      
+      // Calculate average payment using declining balance method
+      let balance = principal;
+      let totalPaymentSum = 0;
+      const principalPerPayment = principal / totalPayments;
+      
+      for (let i = 0; i < totalPayments; i++) {
+        const interestPayment = balance * periodRate;
+        const totalPayment = interestPayment + principalPerPayment;
+        balance -= principalPerPayment;
+        totalPaymentSum += totalPayment;
+      }
+      
+      // Return the average payment amount (though payments will actually vary)
+      return totalPaymentSum / totalPayments;
+    }
+  };
+
   // Calculate mortgage metrics
   const calculateMortgageMetrics = (mortgage: MortgageData): MortgageCalculations => {
     const totalAmount = mortgage.amountTotal;
     const amountPaid = mortgage.amountPaid;
     const remainingBalance = totalAmount - amountPaid;
     
-    // Calculate payment amounts
-    const amountPerPayment = totalAmount / mortgage.durationDays;
-    const totalScheduledPayments = mortgage.durationDays;
+    // Calculate payment amounts using interest rate
+    const amountPerPayment = calculatePaymentAmount(
+      totalAmount - mortgage.initialDeposit, // Principal amount (minus initial deposit)
+      mortgage.interestRate,
+      mortgage.durationDays,
+      mortgage.paymentFrequency,
+      mortgage.interestType
+    );
     
-    // Calculate payments based on frequency
-    // For future enhancement: adjust calculations based on payment frequency
+    // Calculate total payments based on frequency
+    const paymentsPerYear = mortgage.paymentFrequency === 'daily' ? 365 : 
+                           mortgage.paymentFrequency === 'bi-daily' ? 182.5 : 52;
+    const totalScheduledPayments = Math.ceil((mortgage.durationDays / 365) * paymentsPerYear);
     
-    const totalPayments = Math.floor(amountPaid / amountPerPayment);
-    const remainingPayments = totalScheduledPayments - totalPayments;
+    const totalPayments = Math.floor((amountPaid - mortgage.initialDeposit) / amountPerPayment);
+    const remainingPayments = Math.max(0, totalScheduledPayments - totalPayments);
     
     // Calculate overdue status
     const today = new Date();
@@ -281,8 +443,14 @@ export default function MortgagesPage() {
     if (!appUser || submitting) return;
 
     // Validate required fields
-    if (!formData.propertyId || !formData.userId || !formData.amountTotal || !formData.startDate) {
+    if (!formData.propertyId || !formData.userId || !formData.startDate) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate calculated amount
+    if (formData.amountTotal <= 0) {
+      toast.error('Invalid mortgage calculation. Please check property value and deposit.');
       return;
     }
 
@@ -401,8 +569,10 @@ export default function MortgagesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Property</TableHead>
+                <TableHead>Property Value</TableHead>
                 <TableHead>Borrower</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Interest Rate</TableHead>
                 <TableHead>Progress</TableHead>
                 <TableHead>Next Payment</TableHead>
                 <TableHead>Status</TableHead>
@@ -428,6 +598,17 @@ export default function MortgagesPage() {
                     <TableCell>
                       <div>
                         <div className="font-medium flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          {formatCurrency(mortgage.property?.leasePrice || 0)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Property value
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium flex items-center gap-1">
                           <User className="h-3 w-3" />
                           {mortgage.user?.roblox_name || 'Unknown User'}
                         </div>
@@ -447,6 +628,17 @@ export default function MortgagesPage() {
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Remaining: {formatCurrency(calculations.remainingBalance)}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium flex items-center gap-1">
+                          <Percent className="h-3 w-3" />
+                          {(mortgage.interestRate * 100).toFixed(2)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Interest rate
                         </div>
                       </div>
                     </TableCell>
@@ -578,11 +770,45 @@ export default function MortgagesPage() {
                 <Label htmlFor="amountTotal">Total Mortgage Amount</Label>
                 <Input
                   id="amountTotal"
+                  type="text"
+                  className="w-full h-10 bg-gray-50"
+                  value={formData.amountTotal > 0 ? `$${formData.amountTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Select property first'}
+                  readOnly
+                  placeholder="Auto-calculated"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Calculated as: (Property Value - Deposit) + Interest
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interestType">Interest Type</Label>
+                <Select value={formData.interestType} onValueChange={(value: 'fixed' | 'compound') => setFormData(prev => ({ ...prev, interestType: value }))}>
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue placeholder="Select interest type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Fixed (Simple Interest)</SelectItem>
+                    <SelectItem value="compound">Compound (Per Payment Period)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Fixed: Simple interest over loan period. Compound: Interest added each payment cycle.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Input
+                  id="interestRate"
                   type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
                   className="w-full h-10"
-                  value={formData.amountTotal === 0 ? '' : formData.amountTotal}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amountTotal: e.target.value === '' ? 0 : Number(e.target.value) }))}
-                  placeholder="50000"
+                  value={formData.interestRate * 100}
+                  onChange={(e) => setFormData(prev => ({ ...prev, interestRate: Number(e.target.value) / 100 }))}
+                  placeholder="5.00"
                 />
               </div>
 
@@ -637,9 +863,25 @@ export default function MortgagesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="bi-daily">Bi-Daily (Every 2 Days)</SelectItem>
                     <SelectItem value="weekly">Weekly</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paymentAmount">{formatPaymentFrequency(formData.paymentFrequency)} Payment Amount</Label>
+                <Input
+                  id="paymentAmount"
+                  type="text"
+                  className="w-full h-10 bg-gray-50"
+                  value={calculateIndividualPayment() > 0 ? `$${calculateIndividualPayment().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Set up mortgage first'}
+                  readOnly
+                  placeholder="Auto-calculated"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Amount due each {formData.paymentFrequency === 'bi-daily' ? 'bi-daily' : formData.paymentFrequency} payment
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -725,11 +967,45 @@ export default function MortgagesPage() {
                 <Label htmlFor="edit-amountTotal">Total Mortgage Amount</Label>
                 <Input
                   id="edit-amountTotal"
+                  type="text"
+                  className="w-full h-10 bg-gray-50"
+                  value={formData.amountTotal > 0 ? `$${formData.amountTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Select property first'}
+                  readOnly
+                  placeholder="Auto-calculated"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Calculated as: (Property Value - Deposit) + Interest
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-interestType">Interest Type</Label>
+                <Select value={formData.interestType} onValueChange={(value: 'fixed' | 'compound') => setFormData(prev => ({ ...prev, interestType: value }))}>
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue placeholder="Select interest type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Fixed (Simple Interest)</SelectItem>
+                    <SelectItem value="compound">Compound (Per Payment Period)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Fixed: Simple interest over loan period. Compound: Interest added each payment cycle.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-interestRate">Interest Rate (%)</Label>
+                <Input
+                  id="edit-interestRate"
                   type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
                   className="w-full h-10"
-                  value={formData.amountTotal === 0 ? '' : formData.amountTotal}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amountTotal: e.target.value === '' ? 0 : Number(e.target.value) }))}
-                  placeholder="50000"
+                  value={formData.interestRate * 100}
+                  onChange={(e) => setFormData(prev => ({ ...prev, interestRate: Number(e.target.value) / 100 }))}
+                  placeholder="5.00"
                 />
               </div>
 
@@ -755,9 +1031,25 @@ export default function MortgagesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="bi-daily">Bi-Daily (Every 2 Days)</SelectItem>
                     <SelectItem value="weekly">Weekly</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-paymentAmount">{formatPaymentFrequency(formData.paymentFrequency)} Payment Amount</Label>
+                <Input
+                  id="edit-paymentAmount"
+                  type="text"
+                  className="w-full h-10 bg-gray-50"
+                  value={calculateIndividualPayment() > 0 ? `$${calculateIndividualPayment().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Set up mortgage first'}
+                  readOnly
+                  placeholder="Auto-calculated"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Amount due each {formData.paymentFrequency === 'bi-daily' ? 'bi-daily' : formData.paymentFrequency} payment
+                </p>
               </div>
 
               <div className="space-y-2">
