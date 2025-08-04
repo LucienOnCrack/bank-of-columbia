@@ -8,14 +8,12 @@ const nextConfig: NextConfig = {
   },
   
   // Build optimizations for faster deployments
-  swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
   
-  // Bundle analyzer and optimization
+  // Bundle analyzer and optimization  
   experimental: {
-    optimizeCss: true,
     webVitalsAttribution: ['CLS', 'LCP'],
   },
   
