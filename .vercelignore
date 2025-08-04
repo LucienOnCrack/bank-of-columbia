@@ -11,3 +11,18 @@ README.md
 supabase/
 .env.backup
 .env.jwt-update
+# Additional optimization excludes
+.npm/
+.cache/
+*.tsbuildinfo
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+**/__tests__/
+**/*.test.*
+**/*.spec.*

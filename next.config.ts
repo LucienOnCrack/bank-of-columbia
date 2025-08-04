@@ -15,15 +15,14 @@ const nextConfig: NextConfig = {
   // Bundle analyzer and optimization  
   experimental: {
     webVitalsAttribution: ['CLS', 'LCP'],
-    // Optimize build performance
-    // optimizeCss: true, // Disabled due to missing critters dependency
-    // Speed up builds
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  
+  // Turbopack configuration (stable)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -33,13 +32,16 @@ const nextConfig: NextConfig = {
   
   // Build performance optimizations
   webpack: (config, { dev, isServer }) => {
-    // Optimize chunk splitting for better caching
+    // Optimize chunk splitting for better caching and faster builds
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
+        minSize: 20000,
+        maxSize: 100000, // Prevent huge chunks
         cacheGroups: {
           default: false,
           vendors: false,
+          // React framework chunk
           framework: {
             chunks: 'all',
             name: 'framework',
@@ -47,33 +49,44 @@ const nextConfig: NextConfig = {
             priority: 40,
             enforce: true,
           },
+          // Radix UI components (they're heavy)
+          radix: {
+            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+            name: 'radix',
+            chunks: 'all',
+            priority: 35,
+            reuseExistingChunk: true,
+          },
+          // Supabase
+          supabase: {
+            test: /[\\/]node_modules[\\/]@supabase[\\/]/,
+            name: 'supabase',
+            chunks: 'all',
+            priority: 35,
+            reuseExistingChunk: true,
+          },
+          // Large libraries
           lib: {
-            test(module: any) {
-              return module.size() > 160000 && /node_modules[/\\]/.test(module.nameForCondition() || '');
-            },
+            test: /[\\/]node_modules[\\/]/,
             name(module: any) {
-              const hash = require('crypto').createHash('sha1');
-              hash.update(module.libIdent ? module.libIdent({ context: config.context }) : module.nameForCondition());
-              return hash.digest('hex').substring(0, 8);
+              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1];
+              return `lib-${packageName?.replace('@', '')}`;
             },
             priority: 30,
             minChunks: 1,
             reuseExistingChunk: true,
+            maxSize: 50000, // Keep individual lib chunks small
           },
+          // Small commons
           commons: {
             name: 'commons',
-            minChunks: 2,
+            minChunks: 3, // Increased to reduce commons size
             priority: 20,
-          },
-          shared: {
-            name: false,
-            priority: 10,
-            minChunks: 2,
-            reuseExistingChunk: true,
+            maxSize: 30000, // Limit commons chunk size
           },
         },
-        maxInitialRequests: 25,
-        maxAsyncRequests: 25,
+        maxInitialRequests: 30,
+        maxAsyncRequests: 30,
       };
     }
 
@@ -83,6 +96,9 @@ const nextConfig: NextConfig = {
       '@': require('path').resolve(__dirname, './src'),
     };
 
+    // Optimize build performance
+    config.stats = 'minimal'; // Reduce build output verbosity
+    
     return config;
   },
   

@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm ci",
+  "installCommand": "npm ci --prefer-offline --no-audit --no-fund --omit=optional --cache .npm",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
@@ -10,12 +10,19 @@
   },
   "build": {
     "env": {
-      "VERCEL_AUTOMATION_BYPASS": "1"
+      "VERCEL_AUTOMATION_BYPASS": "1",
+      "NODE_OPTIONS": "--max-old-space-size=4096 --no-deprecation",
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "NODE_ENV": "production",
+      "CI": "true"
     }
   },
   "git": {
     "deploymentEnabled": {
       "main": true
     }
-  }
+  },
+  "regions": ["iad1"],
+  "crons": [],
+  "outputDirectory": ".next"
 }
