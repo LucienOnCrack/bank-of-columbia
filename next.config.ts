@@ -6,6 +6,22 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  
+  // Build optimizations for faster deployments
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  
+  // Bundle analyzer and optimization
+  experimental: {
+    optimizeCss: true,
+    webVitalsAttribution: ['CLS', 'LCP'],
+  },
+  
+  // Output optimizations
+  output: 'standalone',
+  
   images: {
     remotePatterns: [
       {
@@ -27,6 +43,9 @@ const nextConfig: NextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+    // Image optimization for faster builds
+    formats: ['image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days
   },
 };
 

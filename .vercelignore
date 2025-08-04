@@ -1,0 +1,13 @@
+# Vercel build optimizations - exclude unnecessary files
+.env*.local
+.next/
+node_modules/
+.git/
+README.md
+*.log
+.DS_Store
+.vscode/
+*.md
+supabase/
+.env.backup
+.env.jwt-update
