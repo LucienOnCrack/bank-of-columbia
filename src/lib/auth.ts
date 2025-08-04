@@ -2,7 +2,13 @@ import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import { User } from '@/types/user';
 
-const JWT_SECRET = (() => {
+// Lazy-load JWT_SECRET only when needed (server-side only)
+function getJWTSecret(): string {
+  // Only validate on server-side
+  if (typeof window !== 'undefined') {
+    throw new Error('JWT_SECRET should not be accessed on client-side');
+  }
+  
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error('JWT_SECRET environment variable is required but not set. Please set a secure JWT secret.');
@@ -11,7 +17,7 @@ const JWT_SECRET = (() => {
     throw new Error('JWT_SECRET is using development fallback value. Please set a secure production secret.');
   }
   return secret;
-})();
+}
 const TOKEN_EXPIRY = '7d'; // 7 days
 
 export const ROBLOX_OAUTH_CONFIG = {
@@ -122,7 +128,7 @@ export function createSessionToken(user: User): string {
       profilePicture: user.profile_picture,
       role: user.role,
     },
-    JWT_SECRET,
+    getJWTSecret(),
     { expiresIn: TOKEN_EXPIRY }
   );
 }
@@ -136,7 +142,7 @@ export function verifySessionToken(token: string): {
   role: string;
 } | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
+    const decoded = jwt.verify(token, getJWTSecret()) as {
       userId: string;
       robloxId: string;
       username: string;
