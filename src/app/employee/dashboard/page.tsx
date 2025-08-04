@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Users,
   MapPin,
-  UserCheck
+  UserCheck,
+  Loader2
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -71,7 +72,7 @@ export default function EmployeeDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
