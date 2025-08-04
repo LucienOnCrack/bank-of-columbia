@@ -26,3 +26,18 @@ playwright-report/
 **/__tests__/
 **/*.test.*
 **/*.spec.*
+# Aggressive excludes for build speed
+node_modules/.cache/
+.next/cache/
+tsconfig.tsbuildinfo
+.eslintcache
+*.map
+*.d.ts.map
+docs/
+examples/
+scripts/
+migrations/
+.vscode/
+.idea/
+.vercel/
+*.config.backup.*

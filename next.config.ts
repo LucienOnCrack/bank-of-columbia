@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
   // Bundle analyzer and optimization  
   experimental: {
     webVitalsAttribution: ['CLS', 'LCP'],
+    // Aggressive build optimizations
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // Faster builds
+    useWasmBinary: false,
   },
   
   // Turbopack configuration (stable)
@@ -30,74 +34,56 @@ const nextConfig: NextConfig = {
   // Output optimizations
   output: 'standalone',
   
+  // Aggressive build speed optimizations
+  productionBrowserSourceMaps: false,
+  poweredByHeader: false,
+  generateEtags: false,
+  
   // Build performance optimizations
   webpack: (config, { dev, isServer }) => {
-    // Optimize chunk splitting for better caching and faster builds
-    if (!dev && !isServer) {
+    // AGGRESSIVE build optimizations for speed
+    if (!dev) {
+      // Simplified chunk splitting for speed
       config.optimization.splitChunks = {
         chunks: 'all',
         minSize: 20000,
-        maxSize: 100000, // Prevent huge chunks
+        maxSize: 100000,
         cacheGroups: {
           default: false,
-          vendors: false,
-          // React framework chunk
-          framework: {
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
             chunks: 'all',
-            name: 'framework',
-            test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-            priority: 40,
+            priority: 10,
+            reuseExistingChunk: true,
             enforce: true,
           },
-          // Radix UI components (they're heavy)
-          radix: {
-            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-            name: 'radix',
-            chunks: 'all',
-            priority: 35,
-            reuseExistingChunk: true,
-          },
-          // Supabase
-          supabase: {
-            test: /[\\/]node_modules[\\/]@supabase[\\/]/,
-            name: 'supabase',
-            chunks: 'all',
-            priority: 35,
-            reuseExistingChunk: true,
-          },
-          // Large libraries
-          lib: {
-            test: /[\\/]node_modules[\\/]/,
-            name(module: any) {
-              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1];
-              return `lib-${packageName?.replace('@', '')}`;
-            },
-            priority: 30,
-            minChunks: 1,
-            reuseExistingChunk: true,
-            maxSize: 50000, // Keep individual lib chunks small
-          },
-          // Small commons
-          commons: {
-            name: 'commons',
-            minChunks: 3, // Increased to reduce commons size
-            priority: 20,
-            maxSize: 30000, // Limit commons chunk size
-          },
         },
-        maxInitialRequests: 30,
-        maxAsyncRequests: 30,
+        maxInitialRequests: 5,
+        maxAsyncRequests: 5,
       };
+
+      // Aggressive tree shaking
+      config.optimization.usedExports = true;
+      config.optimization.sideEffects = false;
+      
+      // Keep minification for smaller bundles
+      config.optimization.minimize = true;
     }
 
-    // Optimize module resolution
+    // Super fast module resolution
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, './src'),
     };
 
-    // Optimize build performance
-    config.stats = 'minimal'; // Reduce build output verbosity
+    // Minimal stats output
+    config.stats = 'errors-warnings';
+    
+    // Faster builds with cache
+    config.cache = {
+      type: 'filesystem',
+    };
     
     return config;
   },
