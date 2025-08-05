@@ -11,6 +11,34 @@ export default function PaymentsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
 
+  const fetchTransactions = async () => {
+    try {
+      setTransactionsLoading(true);
+      const response = await fetch('/api/transactions', {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        console.error('Failed to fetch transactions');
+        return;
+      }
+
+      const data = await response.json();
+      setTransactions(data || []);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    } finally {
+      setTransactionsLoading(false);
+    }
+  };
+
+  // Fetch user transactions
+  useEffect(() => {
+    if (user) {
+      fetchTransactions();
+    }
+  }, [user]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen">
@@ -36,36 +64,6 @@ export default function PaymentsPage() {
       </div>
     );
   }
-
-  // Fetch user transactions
-  useEffect(() => {
-    if (user) {
-      fetchTransactions();
-    }
-  }, [user]);
-
-  const fetchTransactions = async () => {
-    try {
-      setTransactionsLoading(true);
-      const response = await fetch('/api/transactions', {
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched transactions:', data.transactions);
-        setTransactions(data.transactions || []);
-      } else {
-        console.error('Failed to fetch transactions, status:', response.status);
-        const errorData = await response.text();
-        console.error('Error response:', errorData);
-      }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    } finally {
-      setTransactionsLoading(false);
-    }
-  };
 
   // Transform transactions to payment display format
   const formatTransactionAsPayment = (transaction: Transaction) => {

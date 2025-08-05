@@ -97,16 +97,35 @@ export default function AdminPage() {
     if (!selectedUser || !appUser) return;
 
     try {
-      // API call to update user role would go here
-      // For now, update local state
-      setUsers(prev => prev.map(user => 
-        user.id === selectedUser.id ? { ...user, role: newRole } : user
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          role: newRole
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user role');
+      }
+
+      const { user } = await response.json();
+
+      // Update local state with the response from the server
+      setUsers(prev => prev.map(u => 
+        u.id === selectedUser.id ? user : u
       ));
 
       setIsEditDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
       console.error('Error updating user role:', error);
+      alert(`Failed to update user role: ${error.message}`);
     }
   };
 
@@ -119,17 +138,51 @@ export default function AdminPage() {
         ? selectedUser.balance + amount 
         : selectedUser.balance - amount;
 
-      // API calls to update balance and create transaction would go here
-      // For now, update local state
-      setUsers(prev => prev.map(user => 
-        user.id === selectedUser.id ? { ...user, balance: Math.max(0, newBalance) } : user
+      // Prevent negative balances
+      if (newBalance < 0) {
+        alert('Cannot withdraw more than the current balance');
+        return;
+      }
+
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          balance: newBalance,
+          transactionType: balanceType,
+          transactionAmount: amount.toString()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user balance');
+      }
+
+      const { user } = await response.json();
+
+      // Update local state with the response from the server
+      setUsers(prev => prev.map(u => 
+        u.id === selectedUser.id ? user : u
       ));
 
       setIsBalanceDialogOpen(false);
       setSelectedUser(null);
       setBalanceAmount('');
+
+      // Refresh transactions to show the new transaction
+      const transactionsResponse = await fetch('/api/admin/transactions', { credentials: 'include' });
+      if (transactionsResponse.ok) {
+        const transactionsData = await transactionsResponse.json();
+        setTransactions(transactionsData.transactions?.slice(0, 20) || []);
+      }
     } catch (error) {
       console.error('Error updating user balance:', error);
+      alert(`Failed to update user balance: ${error.message}`);
     }
   };
 

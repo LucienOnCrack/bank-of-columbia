@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p>
-              Bank of Columbia ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains 
+              Bank of Columbia (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains 
               how we collect, use, disclose, and safeguard your information when you use our banking platform.
             </p>
             <p>
@@ -157,11 +157,11 @@ export default function PrivacyPolicyPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>9. Children's Privacy</CardTitle>
+            <CardTitle>9. Children&apos;s Privacy</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p>
-              Our Service requires users to be 13 years or older, in compliance with Roblox's terms. 
+              Our Service requires users to be 13 years or older, in compliance with Roblox&apos;s terms. 
               We do not knowingly collect personal information from children under 13. If we become aware 
               that we have collected such information, we will take steps to delete it promptly.
             </p>
@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
           <CardContent className="space-y-4">
             <p>
               We may update this Privacy Policy from time to time. We will notify you of any changes by posting 
-              the new policy on this page and updating the "Last updated" date. Significant changes will be 
+              the new policy on this page and updating the &quot;Last updated&quot; date. Significant changes will be 
               communicated through additional means.
             </p>
           </CardContent>

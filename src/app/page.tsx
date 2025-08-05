@@ -355,7 +355,7 @@ export default function HomePage() {
 
               <div className="mb-8">
                 <p className="text-xl text-gray-300 leading-relaxed">
-                  We're not just a savings platform. Bank of Columbia is a comprehensive banking institution 
+                  We&apos;re not just a savings platform. Bank of Columbia is a comprehensive banking institution 
                   serving the Roblox community with full-service financial solutions including property management, 
                   mortgages, secure transactions, and personalized banking experiences.
                 </p>

@@ -72,18 +72,8 @@ export async function GET(
       });
     }
 
-    // Fetch mortgage payments to calculate total paid
-    const { data: payments, error: paymentsError } = await supabaseAdmin
-      .from('mortgage_payments')
-      .select('amount')
-      .eq('mortgage_id', mortgage.id);
-
-    if (paymentsError) {
-      console.error('Error fetching mortgage payments:', paymentsError);
-    }
-
-    // Calculate total payments made
-    const totalPayments = payments?.reduce((sum, payment) => sum + parseFloat(payment.amount), 0) || 0;
+    // Use the amount_paid field from the mortgage record itself
+    const totalPayments = parseFloat(mortgage.amount_paid) || 0;
 
     return NextResponse.json({ 
       property,

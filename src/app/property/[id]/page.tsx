@@ -27,6 +27,9 @@ interface MortgageData {
   duration_days: number
   next_payment_due: string
   status: string
+  initial_deposit: number
+  interest_rate: number
+  interest_type: string
   user: {
     roblox_name: string
     roblox_id: string
@@ -160,54 +163,57 @@ export default function PropertyDetailsPage() {
 
           {/* Right Column - Details */}
           <div className="bg-gray-100 rounded-lg p-6">
-            {mortgage ? (
-              <div className="space-y-0">
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-900">Location</span>
-                  <span className="text-sm text-gray-600">{property.neighbourhood}, {property.municipality}</span>
-                </div>
-                <div className="border-t border-gray-300"></div>
-
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-800">Property Owner</span>
-                  <span className="text-sm text-gray-600">{property.holder_roblox_name} - {property.holder_roblox_id}</span>
-                </div>
-                <div className="border-t border-gray-300"></div>
-
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-800">Borrower</span>
-                  <span className="text-sm text-gray-600">{mortgage.user.roblox_name} - {mortgage.user.roblox_id}</span>
-                </div>
-                <div className="border-t border-gray-300"></div>
-
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-800">Mortgage Date</span>
-                  <span className="text-sm text-gray-600">{new Date(mortgage.start_date).toLocaleDateString()}</span>
-                </div>
-                <div className="border-t border-gray-300"></div>
-
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-800">Payment Frequency</span>
-                  <span className="text-sm text-gray-600">{mortgage.payment_frequency.charAt(0).toUpperCase() + mortgage.payment_frequency.slice(1)}</span>
-                </div>
-                <div className="border-t border-gray-300"></div>
-
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-800">Duration</span>
-                  <span className="text-sm text-gray-600">{mortgage.duration_days} days</span>
-                </div>
-                <div className="border-t border-gray-300"></div>
-
-                <div className="flex justify-between py-4">
-                  <span className="text-sm font-medium text-slate-800">Next Payment Due</span>
-                  <span className="text-sm text-gray-600">{new Date(mortgage.next_payment_due).toLocaleDateString()}</span>
-                </div>
+            <div className="space-y-0">
+              <div className="flex justify-between py-4">
+                <span className="text-sm font-medium text-slate-800">Address</span>
+                <span className="text-sm text-gray-600">{property.municipality}, {property.neighbourhood}</span>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">No mortgage data available for this property</p>
-              </div>
-            )}
+              <div className="border-t border-gray-300"></div>
+
+              {mortgage ? (
+                <>
+                  <div className="flex justify-between py-4">
+                    <span className="text-sm font-medium text-slate-800">Mortgage Date</span>
+                    <span className="text-sm text-gray-600">{new Date(mortgage.start_date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="border-t border-gray-300"></div>
+
+                  <div className="flex justify-between py-4">
+                    <span className="text-sm font-medium text-slate-800">Deposit</span>
+                    <span className="text-sm text-gray-600">
+                      ${new Intl.NumberFormat('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }).format(mortgage.initial_deposit)}
+                    </span>
+                  </div>
+                  <div className="border-t border-gray-300"></div>
+
+                  <div className="flex justify-between py-4">
+                    <span className="text-sm font-medium text-slate-800">Interest Rate</span>
+                    <span className="text-sm text-gray-600">
+                      {(mortgage.interest_rate * 100).toFixed(2)}% {mortgage.interest_type.charAt(0).toUpperCase() + mortgage.interest_type.slice(1)}
+                    </span>
+                  </div>
+                  <div className="border-t border-gray-300"></div>
+
+                  <div className="flex justify-between py-4">
+                    <span className="text-sm font-medium text-slate-800">Term</span>
+                    <span className="text-sm text-gray-600">{mortgage.duration_days} days</span>
+                  </div>
+                  <div className="border-t border-gray-300"></div>
+
+                  <div className="flex justify-between py-4">
+                    <span className="text-sm font-medium text-slate-800">Payment Frequency</span>
+                    <span className="text-sm text-gray-600">{mortgage.payment_frequency.charAt(0).toUpperCase() + mortgage.payment_frequency.slice(1)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No mortgage data available for this property</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

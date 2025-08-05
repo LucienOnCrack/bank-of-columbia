@@ -15,7 +15,7 @@ export default function TermsOfServicePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p>
-              By accessing and using Bank of Columbia ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. 
+              By accessing and using Bank of Columbia (&quot;the Service&quot;), you accept and agree to be bound by the terms and provision of this agreement. 
               If you do not agree to abide by the above, please do not use this service.
             </p>
             <p>
@@ -52,7 +52,7 @@ export default function TermsOfServicePage() {
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Have a valid Roblox account</li>
-              <li>Be 13 years of age or older (in compliance with Roblox's terms)</li>
+              <li>Be 13 years of age or older (in compliance with Roblox&apos;s terms)</li>
               <li>Provide accurate and complete information when creating your account</li>
               <li>Maintain the security of your account credentials</li>
               <li>Accept responsibility for all activities that occur under your account</li>
@@ -73,8 +73,8 @@ export default function TermsOfServicePage() {
               <li>Engage in fraudulent activities or money laundering</li>
               <li>Attempt to gain unauthorized access to other user accounts</li>
               <li>Use automated scripts or bots to interact with the Service</li>
-              <li>Disrupt or interfere with the Service's operation</li>
-              <li>Violate Roblox's Terms of Service or Community Guidelines</li>
+              <li>Disrupt or interfere with the Service&apos;s operation</li>
+              <li>Violate Roblox&apos;s Terms of Service or Community Guidelines</li>
             </ul>
           </CardContent>
         </Card>
@@ -133,7 +133,7 @@ export default function TermsOfServicePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p>
-              The Service is provided "as is" without any warranties. We shall not be liable for any indirect, incidental, 
+              The Service is provided &quot;as is&quot; without any warranties. We shall not be liable for any indirect, incidental, 
               special, consequential, or punitive damages resulting from your use of the Service.
             </p>
           </CardContent>
