@@ -654,38 +654,49 @@ export default function MortgagesPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {displayData.map((payment, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{payment.paymentNo}</td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{payment.creditor.name}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{payment.debtor.name}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{payment.type}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{payment.direction}</td>
+                {displayData.length > 0 ? (
+                  displayData.map((payment, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{payment.paymentNo}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{payment.creditor.name}</div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{payment.debtor.name}</div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{payment.type}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{payment.direction}</td>
 
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{payment.valueDate}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${payment.amount}</td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className={`w-2 h-2 rounded-full mr-2 ${
-                          payment.status.text.toLowerCase() === 'completed' ? 'bg-green-800' : 'bg-orange-400'
-                        }`}></div>
-                        <div>
-                          <div className="text-sm text-gray-900">{payment.status.text}</div>
-                          <div className="text-xs text-gray-500">{payment.status.subtitle}</div>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{payment.valueDate}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${payment.amount}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className={`w-2 h-2 rounded-full mr-2 ${
+                            payment.status.text.toLowerCase() === 'completed' ? 'bg-green-800' : 'bg-orange-400'
+                          }`}></div>
+                          <div>
+                            <div className="text-sm text-gray-900">{payment.status.text}</div>
+                            <div className="text-xs text-gray-500">{payment.status.subtitle}</div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm">
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <MoreHorizontal className="w-5 h-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  !transactionsLoading && (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-12 text-center">
+                        <div className="text-lg text-gray-600 mb-2">No transactions found</div>
+                        <div className="text-sm text-gray-500">Your payment history will appear here</div>
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
@@ -700,15 +711,7 @@ export default function MortgagesPage() {
             </div>
           )}
 
-          {/* No transactions message */}
-          {!transactionsLoading && displayData.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-lg text-gray-600 mb-2">No transactions found</div>
-                <div className="text-sm text-gray-500">Your payment history will appear here</div>
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
     </div>
