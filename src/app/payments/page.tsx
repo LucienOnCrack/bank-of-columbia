@@ -122,71 +122,22 @@ export default function PaymentsPage() {
 
   const paymentsData = transactions.map(formatTransactionAsPayment);
 
-  // Add some demo data if no real transactions exist (for debugging)
-  const demoData = paymentsData.length === 0 && !transactionsLoading ? [
-    {
-      paymentNo: "DEMO001",
-      creditor: { name: "Demo Transaction", id: "DEMO" },
-      debtor: { name: user?.roblox_name || "You", id: user?.id?.slice(0, 8) || "USER" },
-      type: "Demo",
-      channel: "API",
-      direction: "Incoming", 
-      valueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-      ccy: "USD",
-      amount: "0.00",
-      status: { text: "Demo", subtitle: "No real transactions yet" },
-    }
-  ] : [];
+  // Use actual transaction data only - no demo data for clean user experience
+  const displayData = paymentsData;
 
-  const displayData = paymentsData.length > 0 ? paymentsData : demoData;
+  // Clean user experience - no demo data, user will see real data when they have mortgages/payments
+  const fieldsData: any[] = []
 
-  const fieldsData = [
-    {
-      property: { number: "213604", address: "Mersea Main St." },
-      amount: "$125,000.00",
-      nextPayment: "Jan 15, 2025",
-      status: "Active",
-      paid: "$106,250.00",
-      remaining: "$18,750.00",
-    },
-    {
-      property: { number: "456789", address: "Harbor Oak Ave." },
-      amount: "$89,500.00",
-      nextPayment: "Feb 01, 2025",
-      status: "Pending",
-      paid: "$55,490.00",
-      remaining: "$34,010.00",
-    },
-    {
-      property: { number: "789012", address: "Coastal Pine Rd." },
-      amount: "$200,000.00",
-      nextPayment: "Jan 28, 2025",
-      status: "Complete",
-      paid: "$190,000.00",
-      remaining: "$10,000.00",
-    },
-  ]
+  // Calculate balances from real data (empty for new users)
+  const overdueBalance = 0
+  const totalRemainingBalance = 0
+  const hasOverdueBalance = false
+  const nextPaymentProperty = null
+  const nextPaymentDate = null
+  const nextPaymentAmount = "0.00"
 
-  // Calculate overdue and remaining balances - should be 0 since next payment is 18/08/2025
-  const overdueBalance = 0 // No overdue amount since next payment is in the future
-  const totalRemainingBalance = fieldsData.reduce((sum, field) => {
-    const remaining = field.remaining.replace(/[$,]/g, '');
-    const amount = parseFloat(remaining) || 0;
-    console.log(`Field remaining: ${field.remaining} -> parsed: ${amount}`);
-    return sum + amount;
-  }, 0)
-  
-  console.log('Total calculations:', { overdueBalance, totalRemainingBalance });
-  const hasOverdueBalance = overdueBalance > 0
-  const nextPaymentProperty = "456789" // Property with next payment due
-  const nextPaymentDate = "Feb 01, 2025"
-  const nextPaymentAmount = "445.67"
-
-  // Mock overdue payments data
-  const overduePayments = [
-    { date: "Dec 01, 2024", amount: "445.67", property: "456789" },
-    { date: "Jan 01, 2025", amount: "445.67", property: "456789" },
-  ]
+  // Real overdue payments data (empty for new users)
+  const overduePayments: any[] = []
 
   return (
     <div className="flex min-h-screen">

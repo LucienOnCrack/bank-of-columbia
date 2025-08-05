@@ -171,21 +171,8 @@ export default function MortgagesPage() {
 
   const paymentsData = transactions.map(formatTransactionAsPayment);
 
-  // Add some demo data if no real transactions exist (for debugging)
-  const demoData = paymentsData.length === 0 && !transactionsLoading ? [
-    {
-      paymentNo: "DEMO001",
-      creditor: { name: "Demo Transaction", id: "DEMO" },
-      debtor: { name: user?.roblox_name || "You", id: user?.id?.slice(0, 8) || "USER" },
-      type: "Demo",
-      direction: "Incoming", 
-      valueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-      amount: "0.00",
-      status: { text: "Demo", subtitle: "No real transactions yet" },
-    }
-  ] : [];
-
-  const displayData = paymentsData.length > 0 ? paymentsData : demoData;
+  // Use actual transaction data only - no demo data for clean user experience
+  const displayData = paymentsData;
 
   // Helper function to format currency
   const formatCurrency = (amount: number) => {
