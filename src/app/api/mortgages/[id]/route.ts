@@ -35,12 +35,9 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
     const { id } = await params;
-    const { data: mortgage, error } = await supabaseAdmin
+    
+    let mortgageQuery = supabaseAdmin
       .from('mortgages')
       .select(`
         *,
@@ -48,8 +45,14 @@ export async function GET(
         user:user_id(id, roblox_name, roblox_id),
         created_by_user:created_by(id, roblox_name)
       `)
-      .eq('id', id)
-      .single();
+      .eq('id', id);
+
+    // If user is not employee/admin, ensure they can only access their own mortgage
+    if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
+      mortgageQuery = mortgageQuery.eq('user_id', currentUser.id);
+    }
+
+    const { data: mortgage, error } = await mortgageQuery.single();
 
     if (error) {
       console.error('Error fetching mortgage:', error);
@@ -85,8 +88,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Only employees and admins can delete mortgages
     if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({ error: 'Insufficient permissions: Only employees and administrators can delete mortgages' }, { status: 403 });
     }
 
     const { id } = await params;
