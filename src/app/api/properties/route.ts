@@ -121,16 +121,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user has employee/admin permissions
-    if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
-    // Fetch all properties
-    const { data: properties, error } = await supabaseAdmin
+    let propertiesQuery = supabaseAdmin
       .from('properties')
       .select('*')
       .order('created_at', { ascending: false });
+
+    // If user is not employee/admin, restrict to their own properties
+    if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
+      propertiesQuery = propertiesQuery.eq('holder_roblox_id', currentUser.roblox_id);
+    }
+
+    // Fetch properties based on permissions
+    const { data: properties, error } = await propertiesQuery;
 
     if (error) {
       console.error('Error fetching properties:', error);
@@ -167,9 +169,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user has employee/admin permissions
+    // Check if user has employee/admin permissions (only employees/admins can create properties)
     if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({ error: 'Insufficient permissions: Only employees and administrators can create properties' }, { status: 403 });
     }
 
     const formData = await request.formData();

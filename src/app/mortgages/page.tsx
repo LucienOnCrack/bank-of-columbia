@@ -429,7 +429,7 @@ export default function MortgagesPage() {
                 )) : (
                   <tr>
                     <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
-                      No mortgages found. Only employees and administrators can view mortgage data.
+                      No mortgages found. You currently have no active mortgages.
                     </td>
                   </tr>
                 )}

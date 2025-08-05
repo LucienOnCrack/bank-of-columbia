@@ -117,13 +117,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user has employee/admin permissions
-    if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
-    // Fetch all mortgages with related data
-    const { data: mortgages, error } = await supabaseAdmin
+    let mortgagesQuery = supabaseAdmin
       .from('mortgages')
       .select(`
         *,
@@ -132,6 +126,14 @@ export async function GET(request: NextRequest) {
         created_by_user:created_by(id, roblox_name)
       `)
       .order('created_at', { ascending: false });
+
+    // If user is not employee/admin, restrict to their own mortgages
+    if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
+      mortgagesQuery = mortgagesQuery.eq('user_id', currentUser.id);
+    }
+
+    // Fetch mortgages based on permissions
+    const { data: mortgages, error } = await mortgagesQuery;
 
     if (error) {
       console.error('Error fetching mortgages:', error);
@@ -168,9 +170,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user has employee/admin permissions
+    // Check if user has employee/admin permissions (only employees/admins can create mortgages)
     if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({ error: 'Insufficient permissions: Only employees and administrators can create mortgages' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -267,7 +269,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (currentUser.role !== 'employee' && currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({ error: 'Insufficient permissions: Only employees and administrators can modify mortgages' }, { status: 403 });
     }
 
     const body = await request.json();
