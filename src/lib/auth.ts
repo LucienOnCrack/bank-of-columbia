@@ -31,14 +31,15 @@ export const ROBLOX_OAUTH_CONFIG = {
 };
 
 // Generate Roblox OAuth URL
-export function getRobloxAuthUrl(): string {
-  const state = Math.random().toString(36).substring(2);
+export function getRobloxAuthUrl(returnUrl?: string): string {
+  // Encode return URL in state parameter if provided
+  const stateData = returnUrl ? `${Math.random().toString(36).substring(2)}-${returnUrl}` : Math.random().toString(36).substring(2);
   const params = new URLSearchParams({
     client_id: ROBLOX_OAUTH_CONFIG.clientId,
     redirect_uri: ROBLOX_OAUTH_CONFIG.redirectUri,
     scope: ROBLOX_OAUTH_CONFIG.scope,
     response_type: 'code',
-    state,
+    state: stateData,
   });
   
   return `${ROBLOX_OAUTH_CONFIG.authorizeUrl}?${params.toString()}`;

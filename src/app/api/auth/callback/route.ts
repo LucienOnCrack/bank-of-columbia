@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
+    const state = searchParams.get('state');
 
     if (!code) {
       console.error('No authorization code received');
@@ -89,8 +90,19 @@ export async function GET(request: NextRequest) {
     const sessionToken = createSessionToken(user);
     // Setting session token
 
+    // Determine redirect URL from state parameter
+    let returnUrl = '/dashboard'; // Default to dashboard
+    
+    if (state && state.includes('-/')) {
+      // Extract return URL from state parameter
+      const parts = state.split('-');
+      if (parts.length >= 2) {
+        returnUrl = parts.slice(1).join('-'); // Handle URLs with dashes
+      }
+    }
+    
     // Create response and set cookie
-    const response = NextResponse.redirect(new URL('/dashboard', baseUrl));
+    const response = NextResponse.redirect(new URL(returnUrl, baseUrl));
     
     // Set secure HTTP-only cookie
     response.cookies.set('session-token', sessionToken, {
@@ -101,7 +113,7 @@ export async function GET(request: NextRequest) {
       path: '/',
     });
 
-    // Redirecting to dashboard
+    // Redirecting based on context (petition or dashboard)
     return response;
 
   } catch (error) {

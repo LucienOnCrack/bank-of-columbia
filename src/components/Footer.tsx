@@ -17,21 +17,25 @@ export function Footer() {
             </p>
             <div className="flex space-x-4">
               <Link 
-                href="#" 
+                href="https://github.com/bankofcolumbia" 
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="GitHub"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Github className="h-5 w-5" />
               </Link>
               <Link 
-                href="#" 
+                href="https://twitter.com/bankofcolumbia" 
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Twitter"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Twitter className="h-5 w-5" />
               </Link>
               <Link 
-                href="#" 
+                href="mailto:support@bankofcolumbia.com" 
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Email"
               >
@@ -60,13 +64,13 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Support</h3>
             <div className="space-y-2 text-sm">
-              <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
+              <Link href="/banking/petition" className="block text-muted-foreground hover:text-primary transition-colors">
                 Contact Support
               </Link>
-              <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
+              <Link href="https://status.bankofcolumbia.com" className="block text-muted-foreground hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">
                 System Status
               </Link>
-              <Link href="#" className="block text-muted-foreground hover:text-primary transition-colors">
+              <Link href="/documents" className="block text-muted-foreground hover:text-primary transition-colors">
                 Documentation
               </Link>
             </div>

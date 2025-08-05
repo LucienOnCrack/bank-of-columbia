@@ -48,6 +48,13 @@ export function Navbar() {
     return null;
   }
 
+  // Don't render navbar on TOS and Privacy Policy pages - they have their own headers
+  const isTosPage = pathname === '/tos';
+  const isPrivacyPage = pathname === '/privacy';
+  if (isTosPage || isPrivacyPage) {
+    return null;
+  }
+
   // Don't render navbar on property detail pages - they should be fullscreen
   const isPropertyPage = pathname.startsWith('/property/');
   if (isPropertyPage) {
@@ -105,6 +112,12 @@ export function Navbar() {
   // Don't render navbar on banking page - it has its own header
   const isBankingPage = pathname === '/banking';
   if (isBankingPage) {
+    return null;
+  }
+
+  // Don't render navbar on banking petition pages - they have their own header
+  const isBankingPetitionPage = pathname.startsWith('/banking/petition');
+  if (isBankingPetitionPage) {
     return null;
   }
 

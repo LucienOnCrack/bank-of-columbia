@@ -265,12 +265,7 @@ export default function HomePage() {
                 Explore Our Services
               </Button>
 
-              <div className="flex items-center gap-4">
-                <div className="text-lg font-bold">FDIC</div>
-                <div className="text-sm text-gray-300">
-                  FDIC-Insured - Backed by the full faith and credit of the U.S. Government. Bank of Columbia.
-                </div>
-              </div>
+
             </div>
 
             <div className="flex justify-center">
@@ -387,13 +382,13 @@ export default function HomePage() {
               <h3 className="font-medium mb-4">Bank of Columbia</h3>
               <ul className="space-y-3 text-sm opacity-80">
                 <li>
-                  <Link href="#" className="hover:text-blue-300">
-                    About Bank of Columbia
+                  <Link href="/dashboard" className="hover:text-blue-300">
+                    Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-blue-300">
-                    Security Center
+                  <Link href="/properties" className="hover:text-blue-300">
+                    Properties
                   </Link>
                 </li>
               </ul>
@@ -404,13 +399,13 @@ export default function HomePage() {
               <h3 className="font-medium mb-4">Products</h3>
               <ul className="space-y-3 text-sm opacity-80">
                 <li>
-                  <Link href="#" className="hover:text-blue-300">
+                  <Link href="/banking" className="hover:text-blue-300">
                     Banking & Financial Services
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-blue-300">
-                    Credit Cards
+                  <Link href="/mortgages" className="hover:text-blue-300">
+                    Mortgages
                   </Link>
                 </li>
               </ul>
@@ -421,13 +416,13 @@ export default function HomePage() {
               <h3 className="font-medium mb-4">Resources</h3>
               <ul className="space-y-3 text-sm opacity-80">
                 <li>
-                  <Link href="#" className="hover:text-blue-300">
-                    Articles
+                  <Link href="/documents" className="hover:text-blue-300">
+                    Documents
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-blue-300">
-                    Financial Calculators
+                  <Link href="/analytics" className="hover:text-blue-300">
+                    Analytics
                   </Link>
                 </li>
               </ul>
@@ -477,10 +472,10 @@ export default function HomePage() {
                 <Link href="/privacy" className="hover:text-blue-300">
                   Privacy Policy
                 </Link>
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/tos" className="hover:text-blue-300">
                   Site Terms
                 </Link>
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/privacy" className="hover:text-blue-300">
                   Privacy Center
                 </Link>
               </div>
@@ -488,20 +483,12 @@ export default function HomePage() {
 
             <div className="space-y-4 text-xs opacity-70">
               <p>Bank of Columbia is a full-service financial institution.</p>
-              <p>
-                All loans, deposit products, and credit cards are provided or issued by Bank of Columbia. Member FDIC.
-              </p>
+
               <p>© 2025 Bank of Columbia. All rights reserved.</p>
-              <p>
-                App Store and the Apple Logo are registered trademarks of Apple Inc. Google Play and the Google Play
-                logo are trademarks of Google LLC.
-              </p>
+
             </div>
 
-            <div className="flex items-center space-x-4 mt-8">
-              <div className="text-xs bg-slate-700 px-2 py-1 rounded">Norton Secured</div>
-              <div className="text-xs bg-slate-700 px-2 py-1 rounded">Equal Housing Lender</div>
-            </div>
+
           </div>
         </div>
       </footer>

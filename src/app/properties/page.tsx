@@ -61,12 +61,7 @@ export default function PropertiesPage() {
             Discover exceptional properties available for lease across our municipalities. From residential homes to
             commercial spaces, find your perfect property with Bank of Columbia.
           </p>
-          <div className="flex items-center justify-center space-x-4">
-            <div className="text-lg font-bold">FDIC</div>
-            <div className="text-sm text-gray-300">
-              FDIC-Insured - Backed by the full faith and credit of the U.S. Government. Bank of Columbia.
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -304,16 +299,16 @@ export default function PropertiesPage() {
               </div>
 
               <div className="flex flex-wrap gap-6 text-sm">
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/tos" className="hover:text-blue-300">
                   Site Terms
                 </Link>
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/privacy" className="hover:text-blue-300">
                   Privacy Center
                 </Link>
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/privacy" className="hover:text-blue-300">
                   Privacy Policy
                 </Link>
-                <Link href="#" className="hover:text-blue-300 flex items-center gap-1">
+                <Link href="/privacy" className="hover:text-blue-300 flex items-center gap-1">
                   Your Privacy Choices
                   <div className="w-4 h-4 bg-blue-600 rounded-sm"></div>
                 </Link>
@@ -323,7 +318,7 @@ export default function PropertiesPage() {
             <div className="space-y-4 text-xs opacity-70">
               <p>Bank of Columbia is a full-service financial institution.</p>
               <p>
-                All loans, deposit products, and credit cards are provided or issued by Bank of Columbia. Member FDIC.
+                All loans, deposit products, and credit cards are provided or issued by Bank of Columbia.
               </p>
               <p>© 2025 Bank of Columbia. All rights reserved.</p>
             </div>

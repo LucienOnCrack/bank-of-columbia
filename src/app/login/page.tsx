@@ -25,23 +25,7 @@ export default function LoginPage() {
         </div>
       </header>
 
-      {/* FDIC Disclaimer */}
-      <div className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-start space-x-4">
-            <div className="text-2xl font-bold text-gray-800">FDIC</div>
-            <div className="text-sm text-gray-600">
-              <p className="font-medium">
-                FDIC-Insured - Backed by the full faith and credit of the U.S. Government. Bank of Columbia, Salt Lake
-                City Branch.
-              </p>
-              <p className="mt-1">
-                FDIC insurance applies to deposits accounts only and does not apply to credit cards.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Login Form */}
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4 sm:px-6 lg:px-8">

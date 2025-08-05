@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { 
@@ -11,52 +11,83 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Check, User, DollarSign, LogOut, Shield, Building, Facebook, Instagram, Youtube, Linkedin } from "lucide-react"
+import { ChevronDown, User, DollarSign, LogOut, Shield, Building, Facebook, Instagram, Youtube, Linkedin } from "lucide-react"
 import { useAuth } from "@/components/AuthProvider"
 
 export default function BankingPage() {
+  // Define meaningful time periods (in weeks)
+  const timePeriods = [1, 2, 4, 6, 8, 12, 24, 36, 52] // 1wk, 2wks, 1mo, 6wks, 2mos, 3mos, 6mos, 9mos, 1yr
+  const timeLabels = ["1 wk", "2 wks", "1 mo", "6 wks", "2 mos", "3 mos", "6 mos", "9 mos", "1 yr"]
+  // Exact month equivalents for accurate calculation
+  const monthEquivalents = [0.25, 0.5, 1, 1.5, 2, 3, 6, 9, 12] // Exact months for each time period
+  
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [initialDeposit, setInitialDeposit] = useState(25000)
-  const [termLength, setTermLength] = useState(4)
-  const [calculatedAmount, setCalculatedAmount] = useState(1050)
-  const [nationalAverage, setNationalAverage] = useState(470)
+  const [termLength, setTermLength] = useState(4) // Index in timePeriods array
+  const [calculatedAmount, setCalculatedAmount] = useState(25209) // Bank of Columbia final amount
+  const [nationalAverage, setNationalAverage] = useState(25000) // In-game Bank (always = initial deposit)
+  const [isEditingDeposit, setIsEditingDeposit] = useState(false)
+  const [depositInputValue, setDepositInputValue] = useState('25000')
+  const [signatureCount, setSignatureCount] = useState(0)
   const { user, loading, signOut } = useAuth()
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`
+    // Use a consistent formatting that doesn't depend on locale
+    return `$${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
   }
 
-  const formatTermLength = (years: number) => {
-    if (years < 1) {
-      return `${Math.round(years * 12)} mo`
-    }
-    return `${years} yr`
+  const formatTermLength = (index: number) => {
+    return timeLabels[index] || "1 wk"
   }
 
-  const calculateSavings = () => {
-    // Marcus rate: 4.4% APY (example calculation)
-    const marcusRate = 0.044
-    const nationalRate = 0.018 // Lower national average rate
+  const calculateSavings = useCallback(() => {
+    // Bank of Columbia rate: 5% APY (compounds monthly)
+    const apyRate = 0.05
+    const inGameBankRate = 0.0 // In-game bank has 0% interest
     
-    const marcusAmount = initialDeposit * Math.pow(1 + marcusRate, termLength)
-    const nationalAmount = initialDeposit * Math.pow(1 + nationalRate, termLength)
+    // Get exact months for accurate calculation
+    const termInMonths = monthEquivalents[termLength] || 0.25
     
-    const marcusEarnings = Math.round(marcusAmount - initialDeposit)
-    const nationalEarnings = Math.round(nationalAmount - initialDeposit)
+    // Bank of Columbia: Monthly compounding formula: P * (1 + r/12)^(months)
+    const monthlyRate = apyRate / 12
+    const bocFinalAmount = initialDeposit * Math.pow(1 + monthlyRate, termInMonths)
     
-    setCalculatedAmount(marcusEarnings)
-    setNationalAverage(nationalEarnings)
-  }
+    // In-game Bank: Always equals initial deposit (0% interest)
+    const inGameBankFinalAmount = initialDeposit
+    
+    setCalculatedAmount(Math.round(bocFinalAmount))
+    setNationalAverage(Math.round(inGameBankFinalAmount))
+  }, [initialDeposit, termLength, monthEquivalents])
 
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '')
-    if (value) {
+    setDepositInputValue(value)
+    if (value && parseInt(value) >= 1) {
       setInitialDeposit(parseInt(value))
+    } else if (value === '') {
+      // Allow empty input while editing
+      setInitialDeposit(0)
+    }
+  }
+
+  const handleDepositFocus = () => {
+    setIsEditingDeposit(true)
+    setDepositInputValue(initialDeposit.toString())
+  }
+
+  const handleDepositBlur = () => {
+    setIsEditingDeposit(false)
+    if (depositInputValue && parseInt(depositInputValue) >= 1) {
+      setInitialDeposit(parseInt(depositInputValue))
+    } else {
+      // Set a minimum value of $1 if empty or invalid
+      setInitialDeposit(1)
+      setDepositInputValue('1')
     }
   }
 
   const handleTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value)
+    const value = parseInt(e.target.value)
     setTermLength(value)
   }
 
@@ -69,6 +100,29 @@ export default function BankingPage() {
     }
     document.addEventListener("click", handleClickOutside)
     return () => document.removeEventListener("click", handleClickOutside)
+  }, [])
+
+  // Calculate savings on mount to ensure client-side consistency
+  useEffect(() => {
+    calculateSavings()
+  }, [calculateSavings])
+
+  // Fetch signature count when component loads
+  useEffect(() => {
+    const fetchSignatureCount = async () => {
+      try {
+        const response = await fetch('/api/petition?count=true')
+        if (response.ok) {
+          const data = await response.json()
+          setSignatureCount(data.totalCount || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching signature count:', error)
+        // Keep default count if error
+      }
+    }
+
+    fetchSignatureCount()
   }, [])
 
   return (
@@ -305,16 +359,13 @@ export default function BankingPage() {
                   </p>
                 </div>
 
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-16 py-5 text-lg rounded-lg mb-12 font-normal">
-                  Apply for Developer Support
-                </Button>
+                <Link href="/banking/petition">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-16 py-5 text-lg rounded-lg mb-12 font-normal">
+                    Sign the petition for developer support
+                  </Button>
+                </Link>
 
-                <div className="flex items-center gap-4">
-                  <div className="text-lg font-bold">FDIC</div>
-                  <div className="text-sm text-gray-300">
-                    FDIC-Insured - Backed by the full faith and credit of the U.S. Government. Bank of Columbia.
-                  </div>
-                </div>
+
               </div>
 
               <div className="flex justify-center">
@@ -322,7 +373,7 @@ export default function BankingPage() {
                   <h3 className="text-xl font-medium mb-6">Developer Integration Package</h3>
                   
                   <div className="mb-6">
-                    <div className="text-4xl font-light text-blue-600 mb-2">126 People</div>
+                    <div className="text-4xl font-light text-blue-600 mb-2">{signatureCount} People</div>
                     <div className="text-sm text-gray-600">Have signed the petition to implement this</div>
                   </div>
 
@@ -363,9 +414,12 @@ export default function BankingPage() {
                 </label>
                 <input 
                   type="text" 
-                  value={formatCurrency(initialDeposit)} 
+                  value={isEditingDeposit ? depositInputValue : formatCurrency(initialDeposit)} 
                   className="w-full p-4 border-2 border-blue-500 rounded text-lg font-medium"
                   onChange={handleDepositChange}
+                  onFocus={handleDepositFocus}
+                  onBlur={handleDepositBlur}
+                  suppressHydrationWarning
                 />
               </div>
               
@@ -377,9 +431,9 @@ export default function BankingPage() {
                 <div className="relative mb-4">
                   <input
                     type="range"
-                    min="0.5"
-                    max="6"
-                    step="0.5"
+                    min="0"
+                    max="8"
+                    step="1"
                     value={termLength}
                     className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer slider"
                     onChange={handleTermChange}
@@ -404,8 +458,8 @@ export default function BankingPage() {
                   `}</style>
                 </div>
                 <div className="flex justify-between text-sm text-gray-500">
-                  <span>6 mo</span>
-                  <span>6 yr</span>
+                  <span>1 wk</span>
+                  <span>1 yr</span>
                 </div>
               </div>
 
@@ -416,8 +470,8 @@ export default function BankingPage() {
               </div>
 
               <div className="text-sm text-gray-500">
-                Our rate effective as of August 05, 2025<br/>
-                National Average rate effective as of July 29, 2025
+                Bank of Columbia rate: 5% APY, compounded monthly effective as of August 05, 2025<br/>
+                In-game Bank rate: 0% effective as of July 29, 2025
               </div>
 
               <div>
@@ -434,20 +488,20 @@ export default function BankingPage() {
               <div className="h-full flex justify-center space-x-16 relative">
                 <div className="relative flex flex-col items-center h-full justify-end">
                   <div className="text-center mb-4">
-                    <div className="text-white text-sm mb-1">Marcus</div>
+                    <div className="text-white text-sm mb-1">Bank of Columbia</div>
                     <span style={{color: '#5BCFB3'}} className="text-4xl font-light">{formatCurrency(calculatedAmount)}</span>
                   </div>
                   <div 
-                    style={{backgroundColor: '#5BCFB3', width: '128px', height: `${Math.max(400, Math.min(500, (calculatedAmount / Math.max(calculatedAmount, nationalAverage)) * 500))}px`}}
+                    style={{backgroundColor: '#5BCFB3', width: '128px', height: `${Math.max(350, Math.min(500, 350 + ((calculatedAmount - nationalAverage) / nationalAverage) * 1000))}px`}}
                   ></div>
                 </div>
                 <div className="relative flex flex-col items-center h-full justify-end">
                   <div className="text-center mb-4">
-                    <div className="text-white text-sm mb-1">National Average</div>
+                    <div className="text-white text-sm mb-1">In-game Bank</div>
                     <span style={{color: '#3A98E2'}} className="text-3xl font-light">{formatCurrency(nationalAverage)}</span>
                   </div>
                   <div 
-                    style={{backgroundColor: '#3A98E2', width: '128px', height: `${Math.max(300, Math.min(500, (nationalAverage / Math.max(calculatedAmount, nationalAverage)) * 500))}px`}}
+                    style={{backgroundColor: '#3A98E2', width: '128px', height: '200px'}}
                   ></div>
                 </div>
               </div>
@@ -455,13 +509,15 @@ export default function BankingPage() {
           </div>
           
           <div className="mt-8 text-xs text-gray-500 leading-relaxed">
-            The National Average is based on the APY average for certificate of deposit accounts with a minimum balance of at least $2,500 offered by the top 50 US banks (ranked by total deposits) as reported by Informa Financial Intelligence, www.informars.com. Informa has obtained the data from the various financial institutions that it tracks and its accuracy cannot be guaranteed.
+            In-game Banks typically offer 0% interest on deposits, keeping your money static. Bank of Columbia offers competitive 5% APY with monthly compounding, growing your savings over time. All rates are subject to change and for illustrative purposes only.
           </div>
         </div>
       </section>
 
+
+
       {/* What we will bring to Mayflower Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-light text-center text-gray-900 mb-4">
             What we plan to integrate to Clark County
@@ -493,7 +549,7 @@ export default function BankingPage() {
               <h3 className="text-xl font-medium text-gray-900 mb-4">Savings Accounts</h3>
               <p className="text-gray-600 leading-relaxed mb-4">
                 High-yield savings accounts with competitive interest rates. 
-                Build your financial foundation with secure, FDIC-insured savings.
+Build your financial foundation with secure savings.
               </p>
               <a href="#" className="text-blue-600 hover:underline">Learn more</a>
             </div>
@@ -536,7 +592,7 @@ export default function BankingPage() {
                   <h4 className="text-lg font-medium text-gray-900 mb-2">Integrated Financial Ecosystem</h4>
                   <p className="text-gray-600 leading-relaxed">
                     The credit rating system will seamlessly integrate with all Mayflower financial services, 
-                    creating a comprehensive view of each user's financial health and enabling better lending decisions for future services.
+                    creating a comprehensive view of each user&apos;s financial health and enabling better lending decisions for future services.
                   </p>
                 </div>
               </div>
@@ -553,56 +609,8 @@ export default function BankingPage() {
         </div>
       </section>
 
-      {/* FDIC Insurance Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-light text-gray-900 mb-6">
-                Proposed FDIC Insurance
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                After developer approval, we would pitch FDIC insurance implementation to protect Clark County deposits 
-                up to $250,000 per depositor. This proposal would need to be passed to provide federal protection for user funds.
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">What We Would Offer</h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Full FDIC protection for savings, checking, and automated payment systems - same level as traditional banks. 
-                    All deposits would be federally insured, providing complete peace of mind for Clark County residents.
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Benefits for Users</h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Federal insurance would eliminate risk concerns about digital banking and encourage more residents to use our 
-                    automated services. Users would have the same confidence they get from traditional brick-and-mortar banks.
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Implementation</h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Work with federal regulators to establish proper FDIC coverage, structure accounts for maximum protection, 
-                    and provide clear documentation. This would position Clark County as a leader in secure digital banking.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center">
-              <img
-                src="/images/fdic.png"
-                alt="FDIC - Federal Deposit Insurance Corporation Logo"
-                className="w-full max-w-md object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+
+
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-16">
@@ -703,10 +711,10 @@ export default function BankingPage() {
                 <Link href="/privacy" className="hover:text-blue-300">
                   Privacy Policy
                 </Link>
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/tos" className="hover:text-blue-300">
                   Site Terms
                 </Link>
-                <Link href="#" className="hover:text-blue-300">
+                <Link href="/privacy" className="hover:text-blue-300">
                   Privacy Center
                 </Link>
               </div>
@@ -715,7 +723,7 @@ export default function BankingPage() {
             <div className="space-y-4 text-xs opacity-70">
               <p>Bank of Columbia is a full-service financial institution.</p>
               <p>
-                All loans, deposit products, and credit cards are provided or issued by Bank of Columbia. Member FDIC.
+                All loans, deposit products, and credit cards are provided or issued by Bank of Columbia.
               </p>
               <p>© 2025 Bank of Columbia. All rights reserved.</p>
               <p>
