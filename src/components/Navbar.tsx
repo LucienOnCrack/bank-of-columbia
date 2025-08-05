@@ -54,6 +54,36 @@ export function Navbar() {
     return null;
   }
 
+  // Don't render navbar on documents page - it should be fullscreen
+  const isDocumentsPage = pathname === '/documents';
+  if (isDocumentsPage) {
+    return null;
+  }
+
+  // Don't render navbar on notifications page - it should be fullscreen
+  const isNotificationsPage = pathname === '/notifications';
+  if (isNotificationsPage) {
+    return null;
+  }
+
+  // Don't render navbar on analytics page - it should be fullscreen
+  const isAnalyticsPage = pathname === '/analytics';
+  if (isAnalyticsPage) {
+    return null;
+  }
+
+  // Don't render navbar on profile page - it should be fullscreen
+  const isProfilePage = pathname === '/profile';
+  if (isProfilePage) {
+    return null;
+  }
+
+  // Don't render navbar on e-filing pages - they should be fullscreen
+  const isEFilePage = pathname.startsWith('/efile');
+  if (isEFilePage) {
+    return null;
+  }
+
   // Don't render navbar on landing page - it has its own header
   const isLandingPage = pathname === '/';
   if (isLandingPage) {
@@ -63,6 +93,18 @@ export function Navbar() {
   // Don't render navbar on login page - it has its own header
   const isLoginPage = pathname === '/login';
   if (isLoginPage) {
+    return null;
+  }
+
+  // Don't render navbar on apply-mortgage page - it has its own header
+  const isApplyMortgagePage = pathname === '/apply-mortgage';
+  if (isApplyMortgagePage) {
+    return null;
+  }
+
+  // Don't render navbar on banking page - it has its own header
+  const isBankingPage = pathname === '/banking';
+  if (isBankingPage) {
     return null;
   }
 

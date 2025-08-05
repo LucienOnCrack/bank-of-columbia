@@ -1,115 +1,46 @@
-'use client';
+"use client"
 
-import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { PropertyData, PropertyType } from '@/types/property';
-import { 
-  MapPin,
-  Building,
-  Search,
-  SlidersHorizontal,
-  Loader2,
-  ImageIcon
-} from 'lucide-react';
-import Image from 'next/image';
+import { useState, useEffect, useCallback } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Facebook, Instagram, Youtube, Linkedin, MapPin } from "lucide-react"
+import { PropertyData, PropertyType } from '@/types/property'
+import Image from 'next/image'
 
-const propertyTypes: PropertyType[] = ['Small House', 'Small Row House', 'Medium House', 'Medium Row House', 'Large House', 'Large Row House'];
-const municipalities: string[] = ['Lander', 'Medford', 'Woodbury', 'Mersea'];
+const propertyTypes: PropertyType[] = ['Small House', 'Small Row House', 'Medium House', 'Medium Row House', 'Large House', 'Large Row House']
+const municipalities: string[] = ['Lander', 'Medford', 'Woodbury', 'Mersea']
 
 export default function PropertiesPage() {
-  const [properties, setProperties] = useState<PropertyData[]>([]);
-  const [filteredProperties, setFilteredProperties] = useState<PropertyData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [properties, setProperties] = useState<PropertyData[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const loadProperties = async () => {
+  const loadProperties = useCallback(async () => {
     try {
-      const response = await fetch('/api/properties/public');
+      setLoading(true)
+      const response = await fetch('/api/properties/public')
       if (response.ok) {
-        const data = await response.json();
-        setProperties(data.properties || []);
+        const data = await response.json()
+        setProperties(data.properties || [])
       } else {
-        console.error('Failed to load properties');
+        console.error('Failed to load properties')
       }
     } catch (error) {
-      console.error('Error loading properties:', error);
+      console.error('Error loading properties:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [])
 
-  const applyFilters = useCallback(() => {
-    let filtered = [...properties];
-
-    // Apply search filter
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(property =>
-        property.code.toLowerCase().includes(searchLower) ||
-        property.neighbourhood.toLowerCase().includes(searchLower) ||
-        property.municipality.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply municipality filter
-    if (selectedMunicipality) {
-      filtered = filtered.filter(property => property.municipality === selectedMunicipality);
-    }
-
-    // Apply type filter
-    if (selectedType) {
-      filtered = filtered.filter(property => property.type === selectedType);
-    }
-
-    // Apply max price filter
-    if (maxPrice) {
-      const maxPriceNum = parseFloat(maxPrice);
-      if (!isNaN(maxPriceNum)) {
-        filtered = filtered.filter(property => property.leasePrice <= maxPriceNum);
-      }
-    }
-
-    setFilteredProperties(filtered);
-  }, [properties, searchTerm, selectedMunicipality, selectedType, maxPrice]);
-
-  // Load properties on component mount
   useEffect(() => {
-    loadProperties();
-  }, []);
-
-  // Apply filters whenever filter state changes
-  useEffect(() => {
-    applyFilters();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties, searchTerm, selectedMunicipality, selectedType, maxPrice]);
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedMunicipality('');
-    setSelectedType('');
-    setMaxPrice('');
-  };
+    loadProperties()
+  }, [loadProperties])
 
   const getPropertyImage = (property: PropertyData) => {
     if (property.images && property.images.length > 0) {
-      return property.images[0].url;
+      return property.images[0].url
     }
-    return null;
-  };
+    return null
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -117,196 +48,293 @@ export default function PropertiesPage() {
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        </div>
-      </div>
-    );
+    }).format(price)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Available Properties</h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Discover premium properties available for lease across our municipalities. 
-              Find your perfect home or business location today.
-            </p>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="bg-slate-800 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl lg:text-5xl font-light leading-tight mb-6">Premium Properties for Lease</h1>
+          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            Discover exceptional properties available for lease across our municipalities. From residential homes to
+            commercial spaces, find your perfect property with Bank of Columbia.
+          </p>
+          <div className="flex items-center justify-center space-x-4">
+            <div className="text-lg font-bold">FDIC</div>
+            <div className="text-sm text-gray-300">
+              FDIC-Insured - Backed by the full faith and credit of the U.S. Government. Bank of Columbia.
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Search and Filters */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Bar */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search by property code, neighbourhood, or municipality..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            {/* Filter Toggle */}
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:w-auto"
-            >
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
+      {/* Properties Grid */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <h2 className="text-3xl font-light text-gray-900 mb-4">Featured Properties</h2>
+            <p className="text-gray-600">Explore our selection of premium properties available for lease</p>
           </div>
 
-          {/* Expandable Filters */}
-          {showFilters && (
-            <div className="mt-6 pt-6 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Municipality</label>
-                  <Select value={selectedMunicipality} onValueChange={setSelectedMunicipality}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All municipalities" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All municipalities</SelectItem>
-                      {municipalities.map(municipality => (
-                        <SelectItem key={municipality} value={municipality}>{municipality}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">🏠</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+              <p className="text-gray-600">Check back later for new property listings.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {properties.map((property) => (
+                <div
+                  key={property.id}
+                  className="bg-white rounded-lg overflow-hidden"
+                >
+                  {/* Property Image */}
+                  <div className="relative">
+                    {getPropertyImage(property) ? (
+                      <Image
+                        src={getPropertyImage(property)!}
+                        alt={`Property ${property.code}`}
+                        width={400}
+                        height={300}
+                        className="w-full h-64 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+                        <div className="text-gray-400 text-4xl">🏠</div>
+                      </div>
+                    )}
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Property Type</label>
-                  <Select value={selectedType} onValueChange={setSelectedType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All types</SelectItem>
-                      {propertyTypes.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      {property.status}
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Max Price</label>
-                  <Input
-                    type="number"
-                    placeholder="Enter max price"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                  />
-                </div>
+                  {/* Property Details */}
+                  <div className="p-6">
+                    <div className="mb-4">
+                      <h3 className="text-xl font-medium text-gray-900 mb-2">{property.neighbourhood}</h3>
+                      <div className="flex items-center text-gray-600 mb-3">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        <span className="text-sm">{property.municipality}</span>
+                      </div>
+                      <div className="text-sm text-gray-500 mb-2">Code: {property.code}</div>
+                      <div className="text-2xl font-light text-blue-600 mb-4">{formatPrice(property.leasePrice)}</div>
+                    </div>
 
-                <div className="flex items-end">
-                  <Button variant="outline" onClick={clearFilters} className="w-full">
-                    Clear Filters
-                  </Button>
+                    {/* Property Type */}
+                    <div className="mb-4 py-3 border-t border-gray-200">
+                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                        {property.type}
+                      </span>
+                    </div>
+
+                    {/* Property Info */}
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600">
+                        <div className="mb-1">Holder: {property.holderRobloxName}</div>
+                        <div>Roblox ID: {property.holderRobloxId}</div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-3">
+                      <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">View Details</Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 bg-transparent"
+                      >
+                        Schedule Tour
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          )}
+
+          {/* Load More Button */}
+          {properties.length > 0 && (
+            <div className="text-center mt-12">
+              <Button
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 bg-transparent"
+              >
+                Load More Properties
+              </Button>
             </div>
           )}
         </div>
+      </section>
 
-        {/* Results Summary */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            Showing {filteredProperties.length} of {properties.length} available properties
-          </p>
+      {/* Contact Section */}
+      <section className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-light text-gray-900 mb-4">Ready to Find Your Dream Home?</h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Our real estate experts are here to help you navigate the property market and secure financing.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <h3 className="text-xl font-medium text-gray-900 mb-4">Property Consultation</h3>
+              <p className="text-gray-600 mb-4">
+                Get personalized advice on property selection and market insights from our experts.
+              </p>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Schedule Consultation</Button>
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-xl font-medium text-gray-900 mb-4">Mortgage Pre-Approval</h3>
+              <p className="text-gray-600 mb-4">
+                Get pre-approved for a mortgage to strengthen your offer and streamline the buying process.
+              </p>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Pre-Approved</Button>
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-xl font-medium text-gray-900 mb-4">Property Financing</h3>
+              <p className="text-gray-600 mb-4">
+                Explore competitive mortgage rates and financing options tailored to your needs.
+              </p>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">View Rates</Button>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Properties Grid */}
-        {filteredProperties.length === 0 ? (
-          <div className="text-center py-12">
-            <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
-            <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProperties.map((property) => (
-              <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 group p-0">
-                {/* Property Image */}
-                <div className="relative h-64">
-                  {getPropertyImage(property) ? (
-                    <Image
-                      src={getPropertyImage(property)!}
-                      alt={`Property ${property.code}`}
-                      fill
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-200">
-                      <ImageIcon className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
+      {/* Footer */}
+      <footer className="bg-slate-800 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            <div>
+              <h3 className="font-medium mb-4">Bank of Columbia</h3>
+              <ul className="space-y-3 text-sm opacity-80">
+                <li>
+                  <Link href="#" className="hover:text-blue-300">
+                    About Bank of Columbia
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-blue-300">
+                    Security Center
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-                  {/* Property Type Badge */}
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
-                      {property.type}
-                    </Badge>
-                  </div>
+            <div>
+              <h3 className="font-medium mb-4">Products</h3>
+              <ul className="space-y-3 text-sm opacity-80">
+                <li>
+                  <Link href="#" className="hover:text-blue-300">
+                    Savings Accounts & CDs
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-blue-300">
+                    Credit Cards
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/properties" className="hover:text-blue-300">
+                    Properties
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-4">Resources</h3>
+              <ul className="space-y-3 text-sm opacity-80">
+                <li>
+                  <Link href="#" className="hover:text-blue-300">
+                    Articles
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-blue-300">
+                    Financial Calculators
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="space-y-4 mb-8">
+                <Button
+                  variant="outline"
+                  className="w-full text-white border-white hover:bg-white hover:text-slate-800 bg-transparent"
+                >
+                  FAQs
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full text-white border-white hover:bg-white hover:text-slate-800 bg-transparent"
+                >
+                  Contact Us
+                </Button>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm opacity-80 mb-4">Connect with Us</p>
+                <div className="flex space-x-4">
+                  <Facebook className="w-5 h-5 opacity-60 hover:opacity-100 cursor-pointer" />
+                  <Instagram className="w-5 h-5 opacity-60 hover:opacity-100 cursor-pointer" />
+                  <Youtube className="w-5 h-5 opacity-60 hover:opacity-100 cursor-pointer" />
+                  <div className="w-5 h-5 opacity-60 hover:opacity-100 cursor-pointer">𝕏</div>
+                  <Linkedin className="w-5 h-5 opacity-60 hover:opacity-100 cursor-pointer" />
                 </div>
-
-                {/* Property Details */}
-                <CardHeader className="pb-2 px-4 pt-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
-                        {property.neighbourhood}
-                      </CardTitle>
-                      <div className="flex items-center text-sm text-gray-600 mb-1">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {property.municipality}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {property.code}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-black">
-                        {formatPrice(property.leasePrice)}
-                      </div>
-                      <div className="text-xs text-gray-500">per month</div>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-0 px-4 pb-4">
-                  <div className="flex justify-end">
-                    <Badge className="bg-green-500/20 text-green-700 border-green-200 hover:bg-green-500/30">
-                      Available
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          <div className="border-t border-slate-700 pt-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
+              <div className="mb-6 lg:mb-0">
+                <img src="/boc-logo-white.png" alt="Bank of Columbia" className="h-8 w-auto" />
+              </div>
+
+              <div className="flex flex-wrap gap-6 text-sm">
+                <Link href="#" className="hover:text-blue-300">
+                  Site Terms
+                </Link>
+                <Link href="#" className="hover:text-blue-300">
+                  Privacy Center
+                </Link>
+                <Link href="#" className="hover:text-blue-300">
+                  Privacy Policy
+                </Link>
+                <Link href="#" className="hover:text-blue-300 flex items-center gap-1">
+                  Your Privacy Choices
+                  <div className="w-4 h-4 bg-blue-600 rounded-sm"></div>
+                </Link>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs opacity-70">
+              <p>Bank of Columbia is a full-service financial institution.</p>
+              <p>
+                All loans, deposit products, and credit cards are provided or issued by Bank of Columbia. Member FDIC.
+              </p>
+              <p>© 2025 Bank of Columbia. All rights reserved.</p>
+            </div>
+
+            <div className="flex items-center space-x-4 mt-8">
+              <div className="text-xs bg-slate-700 px-2 py-1 rounded">Norton Secured</div>
+              <div className="text-xs bg-slate-700 px-2 py-1 rounded">Equal Housing Lender</div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
 } 

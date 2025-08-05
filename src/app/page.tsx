@@ -49,41 +49,29 @@ export default function HomePage() {
                   tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setActiveDropdown(activeDropdown === "banking" ? null : "banking")
+                    setActiveDropdown(activeDropdown === "mortgages" ? null : "mortgages")
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault()
-                      setActiveDropdown(activeDropdown === "banking" ? null : "banking")
+                      setActiveDropdown(activeDropdown === "mortgages" ? null : "mortgages")
                     }
                     if (e.key === "Escape") {
                       setActiveDropdown(null)
                     }
                   }}
                 >
-                  <span>Banking</span>
+                  <span>Mortgages</span>
                   <ChevronDown className="w-4 h-4" />
                 </div>
-                {activeDropdown === "banking" && (
+                {activeDropdown === "mortgages" && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 z-[9999] py-2">
                     <div className="px-4 py-2">
                       <Link
-                        href="#"
+                        href="/apply-mortgage"
                         className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
                       >
-                        Account Services
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        Property Banking
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        Financial Calculator
+                        Apply for a Mortgage
                       </Link>
                     </div>
                   </div>
@@ -96,152 +84,64 @@ export default function HomePage() {
                   tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setActiveDropdown(activeDropdown === "cds" ? null : "cds")
+                    setActiveDropdown(activeDropdown === "properties" ? null : "properties")
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault()
-                      setActiveDropdown(activeDropdown === "cds" ? null : "cds")
+                      setActiveDropdown(activeDropdown === "properties" ? null : "properties")
                     }
                     if (e.key === "Escape") {
                       setActiveDropdown(null)
                     }
                   }}
                 >
-                  <span>CDs</span>
+                  <span>Properties</span>
                   <ChevronDown className="w-4 h-4" />
                 </div>
-                {activeDropdown === "cds" && (
+                {activeDropdown === "properties" && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 z-[9999] py-2">
-                    <div className="p-4 px-4 py-2">
+                    <div className="px-4 py-2">
                       <Link
-                        href="#"
+                        href="/properties"
                         className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
                       >
-                        High-Yield CDs
+                        Buying Properties
                       </Link>
                       <Link
-                        href="#"
+                        href="/properties"
                         className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
                       >
-                        No-Penalty CDs
+                        Selling Properties
                       </Link>
                       <Link
-                        href="#"
+                        href="/properties"
                         className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
                       >
-                        CD Rates
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        CD Calculator
+                        Property Appraisals
                       </Link>
                     </div>
                   </div>
                 )}
-          </div>
+              </div>
 
               <div className="relative">
-                <div
-                  className="flex items-center space-x-1 cursor-pointer hover:text-blue-300"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setActiveDropdown(activeDropdown === "credit" ? null : "credit")
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      setActiveDropdown(activeDropdown === "credit" ? null : "credit")
-                    }
-                    if (e.key === "Escape") {
-                      setActiveDropdown(null)
-                    }
-                  }}
+                <Link
+                  href="#"
+                  className="hover:text-blue-300 transition-colors"
                 >
-                  <span>Credit Cards</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-                {activeDropdown === "credit" && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 z-[9999] py-2">
-                    <div className="p-4 px-4 py-2">
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        GM Rewards Cards
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        GM Business Cards
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        Apply Now
-                      </Link>
-                    </div>
-                  </div>
-          )}
-        </div>
+                  <span>Investment Capital</span>
+                </Link>
+              </div>
 
               <div className="relative">
-                <div
-                  className="flex items-center space-x-1 cursor-pointer hover:text-blue-300"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setActiveDropdown(activeDropdown === "tools" ? null : "tools")
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      setActiveDropdown(activeDropdown === "tools" ? null : "tools")
-                    }
-                    if (e.key === "Escape") {
-                      setActiveDropdown(null)
-                    }
-                  }}
+                <Link
+                  href="/banking"
+                  className="hover:text-blue-300 transition-colors"
                 >
-                  <span>Tools & Resources</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-                {activeDropdown === "tools" && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 z-[9999] py-2">
-                    <div className="p-4 px-4 py-2">
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        Articles
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        Financial Calculators
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        Learning Center
-                      </Link>
-                      <Link
-                        href="#"
-                        className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
-                      >
-                        FAQs
-                      </Link>
-                    </div>
-                  </div>
-                )}
-          </div>
+                  <span>Banking</span>
+                </Link>
+              </div>
             </nav>
 
                         {/* Right side buttons */}
