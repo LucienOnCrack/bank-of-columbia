@@ -125,7 +125,7 @@ export default function AdminPage() {
       setSelectedUser(null);
     } catch (error) {
       console.error('Error updating user role:', error);
-      alert(`Failed to update user role: ${error.message}`);
+      alert(`Failed to update user role: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -182,7 +182,7 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Error updating user balance:', error);
-      alert(`Failed to update user balance: ${error.message}`);
+      alert(`Failed to update user balance: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
