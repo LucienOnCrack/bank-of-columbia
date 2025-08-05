@@ -4,11 +4,67 @@ import { Plus, Edit, Search, Building, CreditCard, DollarSign } from "lucide-rea
 import Link from "next/link"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { useAuth } from "@/components/AuthProvider"
+import { useState, useEffect } from "react"
 
 export default function Dashboard() {
   const { user, loading } = useAuth()
+  const [dashboardData, setDashboardData] = useState({
+    propertiesCount: 0,
+    activeMortgagesCount: 0,
+    portfolioValue: 0,
+    loading: true
+  })
 
-  if (loading) {
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return
+
+      try {
+        // Fetch properties and mortgages in parallel
+        const [propertiesResponse, mortgagesResponse] = await Promise.all([
+          fetch('/api/properties', { credentials: 'include' }),
+          fetch('/api/mortgages', { credentials: 'include' })
+        ])
+
+        let propertiesCount = 0
+        let portfolioValue = 0
+        let activeMortgagesCount = 0
+
+        // Process properties data
+        if (propertiesResponse.ok) {
+          const propertiesData = await propertiesResponse.json()
+          const properties = propertiesData.properties || []
+          propertiesCount = properties.length
+          portfolioValue = properties.reduce((sum: number, property: any) => {
+            return sum + (property.propertyValue || property.lease_price || 0)
+          }, 0)
+        }
+
+        // Process mortgages data  
+        if (mortgagesResponse.ok) {
+          const mortgagesData = await mortgagesResponse.json()
+          const mortgages = mortgagesData.mortgages || []
+          activeMortgagesCount = mortgages.filter((mortgage: any) => mortgage.status === 'active').length
+        }
+
+        setDashboardData({
+          propertiesCount,
+          activeMortgagesCount,
+          portfolioValue,
+          loading: false
+        })
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+        setDashboardData(prev => ({ ...prev, loading: false }))
+      }
+    }
+
+    if (!loading && user) {
+      fetchDashboardData()
+    }
+  }, [user, loading])
+
+  if (loading || dashboardData.loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -81,7 +137,7 @@ export default function Dashboard() {
                   <Building className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-light text-white">1</div>
+              <div className="text-3xl font-light text-white">{dashboardData.propertiesCount}</div>
             </div>
 
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
@@ -91,7 +147,7 @@ export default function Dashboard() {
                   <CreditCard className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-light text-white">1</div>
+              <div className="text-3xl font-light text-white">{dashboardData.activeMortgagesCount}</div>
             </div>
 
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
@@ -101,7 +157,14 @@ export default function Dashboard() {
                   <DollarSign className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-light text-white">$543,000</div>
+              <div className="text-3xl font-light text-white">
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(dashboardData.portfolioValue)}
+              </div>
             </div>
           </div>
         </div>
