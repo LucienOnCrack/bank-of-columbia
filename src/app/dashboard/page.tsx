@@ -160,7 +160,7 @@ export default function Dashboard() {
               <div className="text-3xl font-light text-white">
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
-                  currency: 'USD',
+                  currency: 'UCD',
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
                 }).format(dashboardData.portfolioValue)}

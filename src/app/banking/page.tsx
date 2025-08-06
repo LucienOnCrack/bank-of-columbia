@@ -609,8 +609,56 @@ Build your financial foundation with secure savings.
         </div>
       </section>
 
-
-
+      {/* FDIC Insurance Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-light text-gray-900 mb-6">
+                Proposed FDIC Insurance
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                After developer approval, we would pitch FDIC insurance implementation to protect Clark County deposits 
+                up to $250,000 per depositor. This proposal would need to be passed to provide federal protection for user funds.
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">What We Would Offer</h4>
+                  <p className="text-gray-600 leading-relaxed">
+                    Full FDIC protection for savings, checking, and automated payment systems - same level as traditional banks. 
+                    All deposits would be federally insured, providing complete peace of mind for Clark County residents.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Benefits for Users</h4>
+                  <p className="text-gray-600 leading-relaxed">
+                    Federal insurance would eliminate risk concerns about digital banking and encourage more residents to use our 
+                    automated services. Users would have the same confidence they get from traditional brick-and-mortar banks.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Implementation</h4>
+                  <p className="text-gray-600 leading-relaxed">
+                    Work with federal regulators to establish proper FDIC coverage, structure accounts for maximum protection, 
+                    and provide clear documentation. This would position Clark County as a leader in secure digital banking.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-center">
+              <img
+                src="/images/fdic.png"
+                alt="FDIC - Federal Deposit Insurance Corporation Logo"
+                className="w-full max-w-md object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-16">

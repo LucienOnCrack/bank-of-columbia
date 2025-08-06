@@ -178,7 +178,7 @@ export default function MortgagesPage() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'UCD',
     }).format(amount);
   };
 
@@ -449,7 +449,7 @@ export default function MortgagesPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <div className="text-sm text-gray-600 mb-2">Currency</div>
-                  <div className="text-gray-900">USD</div>
+                  <div className="text-gray-900">UCD</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 mb-2">Roblox ID</div>
@@ -469,7 +469,7 @@ export default function MortgagesPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <div>
                       <div className="text-sm text-gray-500 mb-2">Currency</div>
-                      <div className="text-2xl font-medium text-slate-700">USD</div>
+                      <div className="text-2xl font-medium text-slate-700">UCD</div>
                     </div>
                     <div className="text-center">
                       <div className="text-sm text-red-500 mb-2">Overdue Balance</div>
@@ -488,7 +488,7 @@ export default function MortgagesPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <div>
                       <div className="text-sm text-gray-500 mb-2">Currency</div>
-                      <div className="text-2xl font-medium text-slate-700">USD</div>
+                      <div className="text-2xl font-medium text-slate-700">UCD</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-gray-500 mb-2">Remaining Balance</div>

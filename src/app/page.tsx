@@ -250,13 +250,13 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-5xl lg:text-6xl font-light leading-tight mb-8">
-                Bank of Columbia - Your trusted financial partner in the Roblox community
+                Bank of Columbia - Your trusted banking partner in Mayflower
               </h1>
 
               <div className="mb-8">
                 <p className="text-xl text-gray-300 leading-relaxed">
                   We&apos;re not just a savings platform. Bank of Columbia is a comprehensive banking institution 
-                  serving the Roblox community with full-service financial solutions including property management, 
+                  serving Mayflower with full-service financial solutions including property management, 
                   mortgages, secure transactions, and personalized banking experiences.
                 </p>
               </div>

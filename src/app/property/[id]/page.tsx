@@ -157,7 +157,7 @@ export default function PropertyDetailsPage() {
                   'No Mortgage'
                 }
               </div>
-              <div className="text-sm text-blue-600">USD</div>
+              <div className="text-sm text-blue-600">UCD</div>
             </div>
           </div>
 

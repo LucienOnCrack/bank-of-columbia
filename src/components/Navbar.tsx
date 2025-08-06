@@ -24,108 +24,20 @@ export function Navbar() {
     setIsMounted(true);
   }, []);
   
-  // Don't render navbar on employee pages - they have their own header in the sidebar layout
+  // Only render navbar on admin and employee dashboard pages - all other pages have their own transparent headers
+  const isAdminPage = pathname.startsWith('/admin');
   const isEmployeePage = pathname.startsWith('/employee');
-  if (isEmployeePage) {
+  
+  // Don't render navbar anywhere except admin and employee pages
+  if (!isAdminPage && !isEmployeePage) {
     return null;
   }
 
-  // Don't render navbar on dashboard page - it should be fullscreen
-  const isDashboardPage = pathname === '/dashboard';
-  if (isDashboardPage) {
-    return null;
-  }
-
-  // Don't render navbar on payments page - it should be fullscreen
-  const isPaymentsPage = pathname === '/payments';
-  if (isPaymentsPage) {
-    return null;
-  }
-
-  // Don't render navbar on mortgages page - it should be fullscreen
-  const isMortgagesPage = pathname === '/mortgages';
-  if (isMortgagesPage) {
-    return null;
-  }
-
-  // Don't render navbar on TOS and Privacy Policy pages - they have their own headers
-  const isTosPage = pathname === '/tos';
-  const isPrivacyPage = pathname === '/privacy';
-  if (isTosPage || isPrivacyPage) {
-    return null;
-  }
-
-  // Don't render navbar on property detail pages - they should be fullscreen
-  const isPropertyPage = pathname.startsWith('/property/');
-  if (isPropertyPage) {
-    return null;
-  }
-
-  // Don't render navbar on documents page - it should be fullscreen
-  const isDocumentsPage = pathname === '/documents';
-  if (isDocumentsPage) {
-    return null;
-  }
-
-  // Don't render navbar on notifications page - it should be fullscreen
-  const isNotificationsPage = pathname === '/notifications';
-  if (isNotificationsPage) {
-    return null;
-  }
-
-  // Don't render navbar on analytics page - it should be fullscreen
-  const isAnalyticsPage = pathname === '/analytics';
-  if (isAnalyticsPage) {
-    return null;
-  }
-
-  // Don't render navbar on profile page - it should be fullscreen
-  const isProfilePage = pathname === '/profile';
-  if (isProfilePage) {
-    return null;
-  }
-
-  // Don't render navbar on e-filing pages - they should be fullscreen
-  const isEFilePage = pathname.startsWith('/efile');
-  if (isEFilePage) {
-    return null;
-  }
-
-  // Don't render navbar on landing page - it has its own header
-  const isLandingPage = pathname === '/';
-  if (isLandingPage) {
-    return null;
-  }
-
-  // Don't render navbar on login page - it has its own header
-  const isLoginPage = pathname === '/login';
-  if (isLoginPage) {
-    return null;
-  }
-
-  // Don't render navbar on apply-mortgage page - it has its own header
-  const isApplyMortgagePage = pathname === '/apply-mortgage';
-  if (isApplyMortgagePage) {
-    return null;
-  }
-
-  // Don't render navbar on banking page - it has its own header
-  const isBankingPage = pathname === '/banking';
-  if (isBankingPage) {
-    return null;
-  }
-
-  // Don't render navbar on banking petition pages - they have their own header
-  const isBankingPetitionPage = pathname.startsWith('/banking/petition');
-  if (isBankingPetitionPage) {
-    return null;
-  }
-
-  // Get page title for different pages
+  // Get page title for admin and employee pages
   const getPageTitle = () => {
     if (!isMounted) return null;
-    if (pathname === '/dashboard') return 'Dashboard';
-    if (pathname === '/admin') return 'Admin Panel';
+    if (pathname.startsWith('/admin')) return 'Admin Panel';
+    if (pathname.startsWith('/employee')) return 'Employee Dashboard';
     return null;
   };
 

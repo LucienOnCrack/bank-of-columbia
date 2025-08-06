@@ -3,9 +3,18 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Facebook, Instagram, Youtube, Linkedin, MapPin } from "lucide-react"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ChevronDown, User, DollarSign, LogOut, Shield, Building, Facebook, Instagram, Youtube, Linkedin, MapPin } from "lucide-react"
 import { PropertyData, PropertyType } from '@/types/property'
 import Image from 'next/image'
+import { useAuth } from "@/components/AuthProvider"
 
 const propertyTypes: PropertyType[] = ['Small House', 'Small Row House', 'Medium House', 'Medium Row House', 'Large House', 'Large Row House']
 const municipalities: string[] = ['Lander', 'Medford', 'Woodbury', 'Mersea']
@@ -13,6 +22,8 @@ const municipalities: string[] = ['Lander', 'Medford', 'Woodbury', 'Mersea']
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<PropertyData[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const { user, loading: authLoading, signOut } = useAuth()
 
   const loadProperties = useCallback(async () => {
     try {
@@ -45,7 +56,7 @@ export default function PropertiesPage() {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'UCD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price)
@@ -54,14 +65,229 @@ export default function PropertiesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-slate-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-5xl font-light leading-tight mb-6">Premium Properties for Lease</h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Discover exceptional properties available for lease across our municipalities. From residential homes to
-            commercial spaces, find your perfect property with Bank of Columbia.
-          </p>
+      <section className="bg-slate-800 text-white">
+        {/* Header */}
+        <header className="bg-transparent text-white relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <img src="/boc-logo-white.png" alt="Bank of Columbia" className="h-8 w-auto" />
+                <span className="text-xl font-medium text-white">Bank of Columbia</span>
+              </Link>
 
+              {/* Navigation */}
+              <nav className="hidden md:flex items-center space-x-8">
+                <div className="relative">
+                  <div
+                    className="flex items-center space-x-1 cursor-pointer hover:text-blue-300"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActiveDropdown(activeDropdown === "mortgages" ? null : "mortgages")
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        setActiveDropdown(activeDropdown === "mortgages" ? null : "mortgages")
+                      }
+                      if (e.key === "Escape") {
+                        setActiveDropdown(null)
+                      }
+                    }}
+                  >
+                    <span>Mortgages</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                  {activeDropdown === "mortgages" && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 z-[9999] py-2">
+                      <div className="px-4 py-2">
+                        <Link
+                          href="/apply-mortgage"
+                          className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          Apply for a Mortgage
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <div
+                    className="flex items-center space-x-1 cursor-pointer hover:text-blue-300 text-blue-300"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActiveDropdown(activeDropdown === "properties" ? null : "properties")
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        setActiveDropdown(activeDropdown === "properties" ? null : "properties")
+                      }
+                      if (e.key === "Escape") {
+                        setActiveDropdown(null)
+                      }
+                    }}
+                  >
+                    <span>Properties</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                  {activeDropdown === "properties" && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 z-[9999] py-2">
+                      <div className="px-4 py-2">
+                        <Link
+                          href="/properties"
+                          className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          Buying Properties
+                        </Link>
+                        <Link
+                          href="/properties"
+                          className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          Selling Properties
+                        </Link>
+                        <Link
+                          href="/properties"
+                          className="block py-3 px-2 hover:text-blue-600 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          Property Appraisals
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <Link
+                    href="#"
+                    className="hover:text-blue-300 transition-colors"
+                  >
+                    <span>Investment Capital</span>
+                  </Link>
+                </div>
+
+                <div className="relative">
+                  <Link
+                    href="/banking"
+                    className="hover:text-blue-300 transition-colors"
+                  >
+                    <span>Banking</span>
+                  </Link>
+                </div>
+              </nav>
+
+              {/* Right side buttons */}
+              <div className="flex items-center space-x-4">
+                <Link href="#" className="text-sm hover:text-blue-300">
+                  Compare financial products
+                </Link>
+                {user ? (
+                  <Link href="/dashboard">
+                    <Button
+                      variant="outline"
+                      className="text-white border-white hover:bg-white hover:text-slate-800 bg-transparent"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/login">
+                    <Button
+                      variant="outline"
+                      className="text-white border-white hover:bg-white hover:text-slate-800 bg-transparent"
+                    >
+                      Login
+                    </Button>
+                  </Link>
+                )}
+                
+                {/* Profile Picture Dropdown */}
+                {!authLoading && user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0 overflow-hidden bg-white/10 hover:bg-white/20">
+                        {user.profile_picture ? (
+                          <img
+                            src={user.profile_picture}
+                            alt={`${user.roblox_name} avatar`}
+                            className="absolute inset-0 h-full w-full rounded-full object-cover"
+                            onError={(e) => {
+                              console.error('Image failed to load:', user.profile_picture);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <User className="h-4 w-4 text-white" />
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {user.roblox_name}
+                          </p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            ${user.balance.toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2
+                            })}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      
+                      {/* Dashboard Links - Only show if user has access */}
+                      <Link href="/dashboard">
+                        <DropdownMenuItem>
+                          <DollarSign className="mr-2 h-4 w-4" />
+                          <span>User Dashboard</span>
+                        </DropdownMenuItem>
+                      </Link>
+                      
+                      {(user.role === 'employee' || user.role === 'admin') && (
+                        <Link href="/employee/dashboard">
+                          <DropdownMenuItem>
+                            <Building className="mr-2 h-4 w-4" />
+                            <span>Employee Dashboard</span>
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      
+                      {user.role === 'admin' && (
+                        <Link href="/admin">
+                          <DropdownMenuItem>
+                            <Shield className="mr-2 h-4 w-4" />
+                            <span>Admin Dashboard</span>
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={signOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero Content */}
+        <div className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-5xl font-light leading-tight mb-6">Premium Properties for Lease</h1>
+            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Discover exceptional properties available for lease across our municipalities. From residential homes to
+              commercial spaces, find your perfect property with Bank of Columbia.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -130,20 +356,20 @@ export default function PropertiesPage() {
                       </span>
                     </div>
 
-                    {/* Property Info */}
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-600">
-                        <div className="mb-1">Holder: {property.holderRobloxName}</div>
-                        <div>Roblox ID: {property.holderRobloxId}</div>
-                      </div>
-                    </div>
+
 
                     {/* Action Buttons */}
                     <div className="flex space-x-3">
-                      <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">View Details</Button>
+                      <Button 
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => window.open('https://discord.gg/dSZPaCznDP', '_blank')}
+                      >
+                        View Details
+                      </Button>
                       <Button
                         variant="outline"
                         className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 bg-transparent"
+                        onClick={() => window.open('https://discord.gg/dSZPaCznDP', '_blank')}
                       >
                         Schedule Tour
                       </Button>
@@ -154,57 +380,11 @@ export default function PropertiesPage() {
             </div>
           )}
 
-          {/* Load More Button */}
-          {properties.length > 0 && (
-            <div className="text-center mt-12">
-              <Button
-                variant="outline"
-                className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 bg-transparent"
-              >
-                Load More Properties
-              </Button>
-            </div>
-          )}
+
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-light text-gray-900 mb-4">Ready to Find Your Dream Home?</h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Our real estate experts are here to help you navigate the property market and secure financing.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">Property Consultation</h3>
-              <p className="text-gray-600 mb-4">
-                Get personalized advice on property selection and market insights from our experts.
-              </p>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Schedule Consultation</Button>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">Mortgage Pre-Approval</h3>
-              <p className="text-gray-600 mb-4">
-                Get pre-approved for a mortgage to strengthen your offer and streamline the buying process.
-              </p>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Pre-Approved</Button>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">Property Financing</h3>
-              <p className="text-gray-600 mb-4">
-                Explore competitive mortgage rates and financing options tailored to your needs.
-              </p>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">View Rates</Button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-16">
@@ -323,10 +503,7 @@ export default function PropertiesPage() {
               <p>© 2025 Bank of Columbia. All rights reserved.</p>
             </div>
 
-            <div className="flex items-center space-x-4 mt-8">
-              <div className="text-xs bg-slate-700 px-2 py-1 rounded">Norton Secured</div>
-              <div className="text-xs bg-slate-700 px-2 py-1 rounded">Equal Housing Lender</div>
-            </div>
+
           </div>
         </div>
       </footer>
